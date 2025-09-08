@@ -1,9 +1,11 @@
 package com.dayaeyak.performance.domain.hall;
 
+import com.dayaeyak.performance.common.exception.CustomException;
 import com.dayaeyak.performance.domain.hall.dto.request.CreateHallRequestDto;
 import com.dayaeyak.performance.domain.hall.dto.response.CreateHallResponseDto;
 import com.dayaeyak.performance.domain.hall.entity.Hall;
 import com.dayaeyak.performance.domain.hall.entity.HallSection;
+import com.dayaeyak.performance.domain.hall.exception.HallErrorCode;
 import com.dayaeyak.performance.domain.hall.repository.HallRepository;
 import com.dayaeyak.performance.domain.hall.repository.HallSectionRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +31,12 @@ public class HallService {
                 .city(requestDto.city())
                 .capacity(requestDto.capacity())
                 .build();
-        Hall savedHall = hallRepository.save(hall);
+        Hall savedHall;
+        try{
+            savedHall = hallRepository.save(hall);
+        } catch (Exception e){
+            throw new CustomException(HallErrorCode.HALL_NAME_DUPLICATED);
+        }
 
         // 공연장 구역 엔티티 리스트 생성 및 저장
         List<HallSection> hallSections = requestDto.sections().stream()
