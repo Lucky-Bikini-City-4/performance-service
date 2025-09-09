@@ -4,5 +4,5 @@ import com.dayaeyak.performance.domain.hall.entity.Hall;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface HallRepository extends JpaRepository<Hall,Long> {
-
+    Boolean existsByHallNameAndDeletedAtIsNull(String hallName);
 }

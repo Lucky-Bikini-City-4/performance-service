@@ -24,6 +24,11 @@ public class HallService {
 
     @Transactional
     public CreateHallResponseDto createHall(CreateHallRequestDto requestDto) {
+        // 공연장 이름 중복 검증
+        if (hallRepository.existsByHallNameAndDeletedAtIsNull(requestDto.hallName())) {
+            throw new CustomException(HallErrorCode.HALL_NAME_DUPLICATED);
+        }
+
         // 공연장 엔티티 생성 및 저장
         Hall hall = Hall.builder()
                 .hallName(requestDto.hallName())
@@ -31,12 +36,7 @@ public class HallService {
                 .city(requestDto.city())
                 .capacity(requestDto.capacity())
                 .build();
-        Hall savedHall;
-        try{
-            savedHall = hallRepository.save(hall);
-        } catch (Exception e){
-            throw new CustomException(HallErrorCode.HALL_NAME_DUPLICATED);
-        }
+        Hall savedHall = hallRepository.save(hall);
 
         // 공연장 구역 엔티티 리스트 생성 및 저장
         List<HallSection> hallSections = requestDto.sections().stream()
