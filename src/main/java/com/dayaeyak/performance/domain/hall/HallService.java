@@ -29,6 +29,7 @@ public class HallService {
     private final HallRepository hallRepository;
     private final HallSectionRepository hallSectionRepository;
 
+    /* 공연장 생성 */
     @Transactional
     public CreateHallResponseDto createHall(CreateHallRequestDto requestDto) {
         // 공연장 이름 중복 검색
@@ -47,17 +48,17 @@ public class HallService {
 
         // 공연장 구역 엔티티 리스트 생성 및 저장
         List<HallSection> hallSections = createHallSections(requestDto.sections(), hall);
-
         List<HallSection> savedHallSections = hallSectionRepository.saveAll(hallSections);
 
         // 응답 DTO 생성 및 반환
         return new CreateHallResponseDto(savedHall.getHallId());
     }
 
+    /* 공연장 수정 */
     @Transactional
     public CreateHallResponseDto updateHall(Long hallId, UpdateHallRequestDto requestDto) {
         // 기존 공연장 조회
-        Hall existingHall = hallRepository.findById(hallId)
+        Hall existingHall = hallRepository.findByHallIdAndDeletedAtIsNull(hallId)
                 .orElseThrow(() -> new CustomException(HallErrorCode.HALL_NOT_FOUND));
 
         // 공연장 이름 중복 검색 (자기 자신 제외)
@@ -68,6 +69,7 @@ public class HallService {
         // 공연장 정보 수정
         existingHall.update(requestDto.hallName(), requestDto.address(), requestDto.city(), requestDto.capacity());
 
+        // 구역 정보가 있으면 기존 구역 삭제 후 새로 저장
         if(requestDto.sections() != null && !requestDto.sections().isEmpty()) {
             hallSectionRepository.deleteByHall(existingHall);
 
@@ -79,6 +81,7 @@ public class HallService {
         return new CreateHallResponseDto(existingHall.getHallId());
     }
 
+    /* 공연장 단건 조회 */
     public ReadHallResponseDto readHall(Long hallId) {
         Hall hall = hallRepository.findByHallIdAndDeletedAtIsNull(hallId)
                 .orElseThrow(() -> new CustomException(HallErrorCode.HALL_NOT_FOUND));
@@ -86,6 +89,7 @@ public class HallService {
         return ReadHallResponseDto.from(hall);
     }
 
+    /* 공연장 목록 조회 */
     public List<ReadHallResponseDto> readHallList(int page, int size, Region city) {
         if(page < 0 || size < 0){
             throw new CustomException(GlobalErrorCode.INVALID_PAGE_OR_SIZE);
@@ -117,6 +121,22 @@ public class HallService {
                         hall.getCity(),
                         hall.getCapacity()))
                 .toList();
+    }
+
+    /* 공연장 삭제 */
+    @Transactional
+    public Void deleteHall(Long hallId) {
+        Hall hall = hallRepository.findByHallIdAndDeletedAtIsNull(hallId)
+                .orElseThrow(() -> new CustomException(HallErrorCode.HALL_NOT_FOUND));
+
+        // FIXME 관련 공연이 있는지 확인하는 로직 추가 필요
+
+        // Hall, HallSection Soft Delete
+        hall.delete();
+        List<HallSection> sections = hallSectionRepository.findByHallAndDeletedAtIsNull(hall);
+        sections.forEach(HallSection::delete);
+
+        return null;
     }
 
     /* 공연장 구역 엔티티 리스트 생성 및 반환 메서드 */

@@ -23,7 +23,6 @@ import java.util.List;
 public class HallController {
     private final HallService hallService;
 
-    /*공연장 생성 API*/
     @Operation(summary = "Create Hall", description = "공연장, 구역 정보를 받아 새로운 공연장을 생성합니다.")
     @PostMapping
     public ResponseEntity<ApiResponse<CreateHallResponseDto>> createHall(
@@ -45,8 +44,7 @@ public class HallController {
 
     @Operation(summary = "Read Hall", description = "단건 공연장의 기본 정보를 조회합니다.")
     @GetMapping("/{hallId}")
-    public ResponseEntity<ApiResponse<ReadHallResponseDto>> readHall(
-            @PathVariable Long hallId){
+    public ResponseEntity<ApiResponse<ReadHallResponseDto>> readHall(@PathVariable Long hallId){
         return ApiResponse.success(HttpStatus.OK.value(),
                 "공연장 정보를 조회합니다.",
                 hallService.readHall(hallId));
@@ -61,6 +59,14 @@ public class HallController {
         return ApiResponse.success(HttpStatus.OK.value(),
                 "공연장 목록을 조회합니다.",
                 hallService.readHallList(page, size, city));
+    }
+
+    @Operation(summary = "Delete Hall", description = "공연장 정보를 삭제합니다.")
+    @DeleteMapping("/{hallId}")
+    public ResponseEntity<ApiResponse<Void>> deleteHall(@PathVariable Long hallId){
+        return ApiResponse.success(HttpStatus.OK.value(),
+                "공연장을 삭제했습니다.",
+                hallService.deleteHall(hallId));
     }
 
 }
