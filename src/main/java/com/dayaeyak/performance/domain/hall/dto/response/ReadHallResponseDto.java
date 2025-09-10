@@ -17,7 +17,7 @@ public record ReadHallResponseDto(
         String address,
 
         @Schema(description = "공연장 소재 지역", example = "SEOUL")
-        Region city,
+        Region region,
 
         @Schema(description = "수용 인원", example = "12000")
         Integer capacity
@@ -28,7 +28,7 @@ public record ReadHallResponseDto(
                 .hallId(hall.getHallId())
                 .hallName(hall.getHallName())
                 .address(hall.getAddress())
-                .city(hall.getCity())
+                .region(hall.getRegion())
                 .capacity(hall.getCapacity())
                 .build();
 

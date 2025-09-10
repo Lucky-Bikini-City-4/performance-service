@@ -3,7 +3,7 @@ package com.dayaeyak.performance.domain.performance.entity;
 import com.dayaeyak.performance.common.entity.BaseEntity;
 import com.dayaeyak.performance.domain.cast.entity.Cast;
 import com.dayaeyak.performance.domain.hall.entity.Hall;
-import com.dayaeyak.performance.domain.hall.enums.MinimumAge;
+import com.dayaeyak.performance.domain.performance.enums.Grade;
 import com.dayaeyak.performance.domain.performance.enums.Type;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -41,7 +41,7 @@ public class Performance extends BaseEntity {
     private Type type;
 
     @Column(nullable = false)
-    private MinimumAge minimumAge;
+    private Grade grade;
 
     @Column(nullable = false)
     @Temporal(TemporalType.DATE)
@@ -52,10 +52,10 @@ public class Performance extends BaseEntity {
     private Date endDate;
 
     @Column(nullable = false)
-    private Timestamp ticketOpen;
+    private Timestamp ticketOpenAt;
 
     @Column(nullable = false)
-    private Timestamp ticketClose;
+    private Timestamp ticketCloseAt;
 
     @Column(nullable = false)
     private Boolean isActivated;

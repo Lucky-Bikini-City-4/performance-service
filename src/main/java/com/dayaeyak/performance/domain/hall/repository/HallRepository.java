@@ -13,8 +13,8 @@ public interface HallRepository extends JpaRepository<Hall,Long> {
     Boolean existsByHallNameAndDeletedAtIsNull(String hallName);
     Boolean existsByHallNameAndHallIdNotAndDeletedAtIsNull(String hallName, Long hallId);
     Optional<Hall> findByHallIdAndDeletedAtIsNull(Long hallId);
-    Page<Hall> findByCityAndDeletedAtIsNullOrderByCreatedAtDesc(Region city, Pageable pageable);
-    List<Hall> findByCityAndDeletedAtIsNullOrderByCreatedAtDesc(Region city);
+    Page<Hall> findByRegionAndDeletedAtIsNullOrderByCreatedAtDesc(Region region, Pageable pageable);
+    List<Hall> findByRegionAndDeletedAtIsNullOrderByCreatedAtDesc(Region region);
     Page<Hall> findByDeletedAtIsNullOrderByCreatedAtDesc(Pageable pageable);
     List<Hall> findByDeletedAtIsNullOrderByCreatedAtDesc();
 }
