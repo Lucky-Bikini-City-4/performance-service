@@ -10,10 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/cast")
@@ -30,4 +27,15 @@ public class CastController {
                 "출연진이 생성되었습니다",
                 castService.createCast(requestDto));
     }
+
+    @Operation(summary = "Update Cast", description = "기존 출연진의 정보를 수정합니다")
+    @PatchMapping("/{castId}")
+    public ResponseEntity<ApiResponse<CreateCastResponseDto>> updateCast(
+            @PathVariable Long castId,
+            @Validated @RequestBody CreateCastRequestDto requestDto){
+        return ApiResponse.success(HttpStatus.OK.value(),
+                "출연진 정보가 수정되었습니다.",
+                castService.updateCast(castId, requestDto));
+    }
+
 }

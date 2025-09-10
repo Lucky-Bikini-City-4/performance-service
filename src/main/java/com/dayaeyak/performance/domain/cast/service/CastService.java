@@ -31,4 +31,22 @@ public class CastService {
         // 응답 DTO 생성 및 반환
         return new CreateCastResponseDto(savedCast.getCastId(), savedCast.getCastName());
     }
+
+    /*출연진 수정*/
+    @Transactional
+    public CreateCastResponseDto updateCast(Long castId, CreateCastRequestDto requestDto) {
+        // 기존 출연진 조회
+        Cast existingCast = castRepository.findByCastIdAndDeletedAtIsNull(castId)
+                .orElseThrow(() -> new CustomException(CastErrorCode.CAST_NOT_FOUND));
+
+        // 출연진 이름 중복 검색 (자신 제외)
+        if(castRepository.existsByCastNameAndCastIdNotAndDeletedAtIsNull(requestDto.castName(), castId)){
+            throw new CustomException(CastErrorCode.CAST_NAME_DUPLICATED);
+        }
+
+        // 출연진 정보 수정
+        existingCast.update(requestDto.castName());
+
+        return new CreateCastResponseDto(existingCast.getCastId(), existingCast.getCastName());
+    }
 }
