@@ -59,4 +59,12 @@ public class CastController {
                 castService.readCastList(page, size));
     }
 
+    @Operation(summary = "Delete Cast", description = "출연진 정보를 삭제합니다.")
+    @DeleteMapping("/{castId}")
+    public ResponseEntity<ApiResponse<Void>> deleteCast(@PathVariable Long castId){
+        return ApiResponse.success(HttpStatus.OK.value(),
+                "출연진을 삭제했습니다",
+                castService.deleteCast(castId));
+    }
+
 }

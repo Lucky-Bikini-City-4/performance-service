@@ -67,6 +67,7 @@ public class CastService {
         // 공연 ID만 추출하여 리스트화
         List<Long> performanceIdList = cast.getPerformanceList()
                 .stream()
+                .filter(p -> p.getDeletedAt() == null)
                 .map(Performance::getPerformanceId)
                 .toList();
 
@@ -92,5 +93,24 @@ public class CastService {
         return castList.stream()
                 .map(cast -> new CreateCastResponseDto(cast.getCastId(), cast.getCastName()))
                 .toList();
+    }
+
+    /* 출연진 삭제 */
+    @Transactional
+    public Void deleteCast(Long castId) {
+        Cast cast = castRepository.findByCastIdAndDeletedAtIsNull(castId)
+                .orElseThrow(() -> new CustomException(CastErrorCode.CAST_NOT_FOUND));
+
+        // 관련 공연이 있는지 확인, 있으면 예외 처리
+        boolean hasPerformances = cast.getPerformanceList()
+                .stream()
+                .anyMatch(p -> p.getDeletedAt() == null);
+        if (hasPerformances) {
+            throw new CustomException(CastErrorCode.CAST_LINKED_PERFORMANCE);
+        }
+
+        cast.delete();
+        return null;
+
     }
 }
