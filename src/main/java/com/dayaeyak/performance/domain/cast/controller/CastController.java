@@ -2,6 +2,7 @@ package com.dayaeyak.performance.domain.cast.controller;
 
 import com.dayaeyak.performance.domain.cast.dto.request.CreateCastRequestDto;
 import com.dayaeyak.performance.domain.cast.dto.response.CreateCastResponseDto;
+import com.dayaeyak.performance.domain.cast.dto.response.ReadCastResponseDto;
 import com.dayaeyak.performance.domain.cast.service.CastService;
 import com.dayaeyak.performance.utils.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/cast")
@@ -36,6 +39,24 @@ public class CastController {
         return ApiResponse.success(HttpStatus.OK.value(),
                 "출연진 정보가 수정되었습니다.",
                 castService.updateCast(castId, requestDto));
+    }
+
+    @Operation(summary = "Read Cast", description = "단건 출연진의 정보를 조회합니다.")
+    @GetMapping("/{castId}")
+    public ResponseEntity<ApiResponse<ReadCastResponseDto>> readCast(@PathVariable Long castId){
+        return ApiResponse.success(HttpStatus.OK.value(),
+                "출연진 정보를 조회합니다.",
+                castService.readCast(castId));
+    }
+
+    @Operation(summary = "Read Cast List", description = "출연진(기본 정보) 목록을 조회합니다.")
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<CreateCastResponseDto>>> readCastList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
+        return ApiResponse.success(HttpStatus.OK.value(),
+                "출연진 목록을 조회합니다.",
+                castService.readCastList(page, size));
     }
 
 }
