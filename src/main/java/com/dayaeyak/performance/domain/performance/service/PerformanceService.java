@@ -7,6 +7,7 @@ import com.dayaeyak.performance.domain.cast.repository.CastRepository;
 import com.dayaeyak.performance.domain.hall.entity.Hall;
 import com.dayaeyak.performance.domain.hall.exception.HallErrorCode;
 import com.dayaeyak.performance.domain.hall.repository.HallRepository;
+import com.dayaeyak.performance.domain.performance.dto.request.ChangePerformanceRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.request.CreatePerformanceRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.request.UpdatePerformanceRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.response.CreatePerformanceResponseDto;
@@ -136,5 +137,21 @@ public class PerformanceService {
         }
 
         return new CreatePerformanceResponseDto(performance.getPerformanceId());
+    }
+
+    /* 공연 활성화 상태 변경 */
+    @Transactional
+    public Boolean changeIsActivated(Long performanceId, ChangePerformanceRequestDto requestDto) {
+        Performance performance = performanceRepository.findByPerformanceIdAndDeletedAtIsNull(performanceId)
+                .orElseThrow(() -> new CustomException(PerformanceErrorCode.PERFORMANCE_NOT_FOUND));
+
+        // 티켓 오픈 일시 이후, 마감 일시 이전이면 상태 변경 불가
+        if (performance.getTicketOpenAt().before(new Timestamp(System.currentTimeMillis()))
+            && performance.getTicketCloseAt().after(new Timestamp(System.currentTimeMillis()))) {
+            throw new CustomException(PerformanceErrorCode.CANNOT_CHANGE_ACTIVATION);
+        }
+
+        performance.setIsActivated(requestDto.isActivated());
+        return performance.getIsActivated();
     }
 }

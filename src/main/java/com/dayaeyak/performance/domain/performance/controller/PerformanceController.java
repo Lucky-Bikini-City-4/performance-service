@@ -1,5 +1,6 @@
 package com.dayaeyak.performance.domain.performance.controller;
 
+import com.dayaeyak.performance.domain.performance.dto.request.ChangePerformanceRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.request.CreatePerformanceRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.request.UpdatePerformanceRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.response.CreatePerformanceResponseDto;
@@ -38,4 +39,15 @@ public class PerformanceController {
                 "공연을 수정했습니다.",
                 performanceService.updatePerformance(performanceId, requestDto));
     }
+
+    @Operation(summary = "Change IsActivated", description = "공연의 활성화 상태를 변경합니다")
+    @PatchMapping("/{performanceId}/activation")
+    public ResponseEntity<ApiResponse<Boolean>> changeIsActivated(
+            @PathVariable Long performanceId,
+            @Validated @RequestBody ChangePerformanceRequestDto requestDto){
+        return ApiResponse.success(HttpStatus.OK.value(),
+                "공연의 활성화 상태가 다음과 같이 변경되었습니다.",
+                performanceService.changeIsActivated(performanceId,requestDto));
+    }
+
 }
