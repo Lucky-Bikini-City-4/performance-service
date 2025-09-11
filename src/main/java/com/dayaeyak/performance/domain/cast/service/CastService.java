@@ -1,9 +1,11 @@
 package com.dayaeyak.performance.domain.cast.service;
 
+import com.dayaeyak.performance.common.dto.PageInfoDto;
 import com.dayaeyak.performance.common.exception.CustomException;
 import com.dayaeyak.performance.common.exception.GlobalErrorCode;
 import com.dayaeyak.performance.domain.cast.dto.request.CreateCastRequestDto;
 import com.dayaeyak.performance.domain.cast.dto.response.CreateCastResponseDto;
+import com.dayaeyak.performance.domain.cast.dto.response.ReadCastPageResponseDto;
 import com.dayaeyak.performance.domain.cast.dto.response.ReadCastResponseDto;
 import com.dayaeyak.performance.domain.cast.entity.Cast;
 import com.dayaeyak.performance.domain.cast.exception.CastErrorCode;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,24 +78,30 @@ public class CastService {
         return new ReadCastResponseDto(cast.getCastId(), cast.getCastName(), performanceIdList);
     }
 
-    /* 출연진 목록 조회 */
-    public List<CreateCastResponseDto> readCastList(int page, int size) {
+    /* 출연진 페이징 조회 */
+    public ReadCastPageResponseDto readCastList(int page, int size) {
         if(page < 0 || size < 0){
             throw new CustomException(GlobalErrorCode.INVALID_PAGE_OR_SIZE);
         }
 
-        List<Cast> castList;
-        if(size == 0){      // 전체 조회 조건
-            castList = castRepository.findByDeletedAtIsNullOrderByCreatedAtDesc();
-        } else{
-            Pageable pageable = PageRequest.of(page, size);
-            Page<Cast> castPage = castRepository.findByDeletedAtIsNullOrderByCreatedAtDesc(pageable);
-            castList = castPage.getContent();
-        }
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Cast> castPage = castRepository.findByDeletedAtIsNull(pageable);
 
-        return castList.stream()
-                .map(cast -> new CreateCastResponseDto(cast.getCastId(), cast.getCastName()))
+        // PageInfo 생성
+        PageInfoDto pageInfo = new PageInfoDto(
+                castPage.getNumber() + 1, // 0-base -> 1-base
+                castPage.getSize(),
+                castPage.getTotalElements(),
+                castPage.getTotalPages(),
+                castPage.isLast()
+        );
+
+        List<ReadCastResponseDto> data = castPage.getContent()
+                .stream()
+                .map(ReadCastResponseDto::from)
                 .toList();
+
+        return new ReadCastPageResponseDto(pageInfo, data);
     }
 
     /* 출연진 삭제 */

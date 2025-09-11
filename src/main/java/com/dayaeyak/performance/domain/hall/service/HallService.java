@@ -1,11 +1,13 @@
 package com.dayaeyak.performance.domain.hall.service;
 
+import com.dayaeyak.performance.common.dto.PageInfoDto;
 import com.dayaeyak.performance.common.exception.CustomException;
 import com.dayaeyak.performance.common.exception.GlobalErrorCode;
 import com.dayaeyak.performance.domain.hall.dto.request.CreateHallRequestDto;
 import com.dayaeyak.performance.domain.hall.dto.request.CreateHallSectionDto;
 import com.dayaeyak.performance.domain.hall.dto.request.UpdateHallRequestDto;
 import com.dayaeyak.performance.domain.hall.dto.response.CreateHallResponseDto;
+import com.dayaeyak.performance.domain.hall.dto.response.ReadHallPageResponseDto;
 import com.dayaeyak.performance.domain.hall.dto.response.ReadHallResponseDto;
 import com.dayaeyak.performance.domain.hall.entity.Hall;
 import com.dayaeyak.performance.domain.hall.entity.HallSection;
@@ -17,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -89,38 +92,37 @@ public class HallService {
         return ReadHallResponseDto.from(hall);
     }
 
-    /* 공연장 목록 조회 */
-    public List<ReadHallResponseDto> readHallList(int page, int size, Region region) {
+    /* 공연장 페이징 조회 */
+    public ReadHallPageResponseDto readHallList(int page, int size, Region region) {
         if(page < 0 || size < 0){
             throw new CustomException(GlobalErrorCode.INVALID_PAGE_OR_SIZE);
         }
 
-        List<Hall> halls;
-        if(size == 0){
-            if(region != null){       // 지역별 전체 공연장 목록 조회
-                halls = hallRepository.findByRegionAndDeletedAtIsNullOrderByCreatedAtDesc(region);
-            } else{                 // 전체 공연장 목록 조회
-                halls = hallRepository.findByDeletedAtIsNullOrderByCreatedAtDesc();
-            }
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Hall> halls;
+
+        // 공연장 지역별 검색, 지역이 없을 경우 전체에서 검색
+        if(region == null){
+            halls = hallRepository.findByDeletedAtIsNull(pageable);
         } else{
-            Pageable pageable = PageRequest.of(page, size);
-            Page<Hall> hallPage;
-            if (region != null) {     // 지역별 공연장 페이징 조회
-                hallPage = hallRepository.findByRegionAndDeletedAtIsNullOrderByCreatedAtDesc(region, pageable);
-            } else {                // 공연장 페이징 조회
-                hallPage = hallRepository.findByDeletedAtIsNullOrderByCreatedAtDesc(pageable);
-            }
-            halls = hallPage.getContent();
+            halls = hallRepository.findByDeletedAtIsNullAndRegion(pageable, region);
         }
 
-        return halls.stream()
-                .map(hall -> new ReadHallResponseDto(
-                        hall.getHallId(),
-                        hall.getHallName(),
-                        hall.getAddress(),
-                        hall.getRegion(),
-                        hall.getCapacity()))
+        // PageInfo 생성
+        PageInfoDto pageInfo = new PageInfoDto(
+                halls.getNumber() + 1, // 0-base -> 1-base
+                halls.getSize(),
+                halls.getTotalElements(),
+                halls.getTotalPages(),
+                halls.isLast()
+        );
+
+        List<ReadHallResponseDto> data = halls.getContent()
+                .stream()
+                .map(ReadHallResponseDto::from)
                 .toList();
+
+        return new ReadHallPageResponseDto(pageInfo, data);
     }
 
     /* 공연장 삭제 */

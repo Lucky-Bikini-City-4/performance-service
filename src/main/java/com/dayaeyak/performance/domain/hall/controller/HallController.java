@@ -1,11 +1,12 @@
 package com.dayaeyak.performance.domain.hall.controller;
 
-import com.dayaeyak.performance.domain.hall.service.HallService;
 import com.dayaeyak.performance.domain.hall.dto.request.CreateHallRequestDto;
 import com.dayaeyak.performance.domain.hall.dto.request.UpdateHallRequestDto;
 import com.dayaeyak.performance.domain.hall.dto.response.CreateHallResponseDto;
+import com.dayaeyak.performance.domain.hall.dto.response.ReadHallPageResponseDto;
 import com.dayaeyak.performance.domain.hall.dto.response.ReadHallResponseDto;
 import com.dayaeyak.performance.domain.hall.enums.Region;
+import com.dayaeyak.performance.domain.hall.service.HallService;
 import com.dayaeyak.performance.utils.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,8 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/halls")
@@ -53,7 +52,7 @@ public class HallController {
 
     @Operation(summary = "Read Hall List", description = "공연장(기본 정보) 목록을 조회합니다.")
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ReadHallResponseDto>>> readHallList(
+    public ResponseEntity<ApiResponse<ReadHallPageResponseDto>> readHallList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Region region){

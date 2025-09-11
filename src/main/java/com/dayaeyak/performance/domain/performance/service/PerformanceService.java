@@ -178,7 +178,7 @@ public class PerformanceService {
             throw new CustomException(GlobalErrorCode.INVALID_PAGE_OR_SIZE);
         }
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("startDate").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "startDate"));
         Page<Performance> performances;
 
         // 공연 타입별 검색, 타입이 없을 경우 전체 타입에서 검색
