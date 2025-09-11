@@ -37,4 +37,10 @@ public class HallSection extends BaseEntity {
         this.seats = seats;
         this.seatPrice = seatPrice;
     }
+
+    public void update(String sectionName, Integer seats, Integer seatPrice) {
+        this.sectionName = sectionName;
+        this.seats = seats;
+        this.seatPrice = seatPrice;
+    }
 }
