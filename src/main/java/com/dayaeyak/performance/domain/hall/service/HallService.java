@@ -15,6 +15,7 @@ import com.dayaeyak.performance.domain.hall.enums.Region;
 import com.dayaeyak.performance.domain.hall.exception.HallErrorCode;
 import com.dayaeyak.performance.domain.hall.repository.HallRepository;
 import com.dayaeyak.performance.domain.hall.repository.HallSectionRepository;
+import com.dayaeyak.performance.domain.performance.repository.PerformanceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +32,7 @@ import java.util.List;
 public class HallService {
     private final HallRepository hallRepository;
     private final HallSectionRepository hallSectionRepository;
+    private final PerformanceRepository performanceRepository;
 
     /* 공연장 생성 */
     @Transactional
@@ -131,7 +133,10 @@ public class HallService {
         Hall hall = hallRepository.findByHallIdAndDeletedAtIsNull(hallId)
                 .orElseThrow(() -> new CustomException(HallErrorCode.HALL_NOT_FOUND));
 
-        // FIXME 관련 공연이 있는지 확인하는 로직 추가 필요
+        // 관련 공연이 있는지 확인
+        if(performanceRepository.existsByHallAndDeletedAtIsNull(hall)){
+            throw new CustomException(HallErrorCode.CANNOT_DELETE_HALL);
+        }
 
         // Hall, HallSection Soft Delete
         hall.delete();

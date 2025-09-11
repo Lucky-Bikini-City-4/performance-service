@@ -1,5 +1,6 @@
 package com.dayaeyak.performance.domain.performance.repository;
 
+import com.dayaeyak.performance.domain.hall.entity.Hall;
 import com.dayaeyak.performance.domain.performance.entity.Performance;
 import com.dayaeyak.performance.domain.performance.enums.Type;
 import org.springframework.data.domain.Page;
@@ -13,4 +14,5 @@ public interface PerformanceRepository extends JpaRepository<Performance,Long> {
     Optional<Performance> findByPerformanceIdAndDeletedAtIsNull(Long performanceId);
     Page<Performance> findByDeletedAtIsNullAndIsActivatedIsTrue(Pageable pageable);
     Page<Performance> findByDeletedAtIsNullAndTypeAndIsActivatedIsTrue(Pageable pageable, Type type);
+    boolean existsByHallAndDeletedAtIsNull(Hall hall);
 }
