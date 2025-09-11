@@ -166,7 +166,7 @@ public class PerformanceService {
 
     /* 공연 단건 조회 */
     public ReadPerformanceResponseDto readPerformance(Long performanceId) {
-        Performance performance = performanceRepository.findByPerformanceIdAndDeletedAtIsNull(performanceId)
+        Performance performance = performanceRepository.findByPerformanceIdAndDeletedAtIsNullAndIsActivatedIsTrue(performanceId)
                 .orElseThrow(() -> new CustomException(PerformanceErrorCode.PERFORMANCE_NOT_FOUND));
 
         return ReadPerformanceResponseDto.from(performance);
@@ -183,9 +183,9 @@ public class PerformanceService {
 
         // 공연 타입별 검색, 타입이 없을 경우 전체 타입에서 검색
         if (type == null) {
-            performances = performanceRepository.findByDeletedAtIsNull(pageable);
+            performances = performanceRepository.findByDeletedAtIsNullAndIsActivatedIsTrue(pageable);
         } else {
-            performances = performanceRepository.findByDeletedAtIsNullAndType(pageable, type);
+            performances = performanceRepository.findByDeletedAtIsNullAndTypeAndIsActivatedIsTrue(pageable, type);
         }
 
         // PageInfo 생성

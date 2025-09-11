@@ -9,7 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface PerformanceRepository extends JpaRepository<Performance,Long> {
+    Optional<Performance> findByPerformanceIdAndDeletedAtIsNullAndIsActivatedIsTrue(Long performanceId);
     Optional<Performance> findByPerformanceIdAndDeletedAtIsNull(Long performanceId);
-    Page<Performance> findByDeletedAtIsNull(Pageable pageable);
-    Page<Performance> findByDeletedAtIsNullAndType(Pageable pageable, Type type);
+    Page<Performance> findByDeletedAtIsNullAndIsActivatedIsTrue(Pageable pageable);
+    Page<Performance> findByDeletedAtIsNullAndTypeAndIsActivatedIsTrue(Pageable pageable, Type type);
 }
