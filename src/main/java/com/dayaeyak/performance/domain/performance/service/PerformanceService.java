@@ -8,8 +8,10 @@ import com.dayaeyak.performance.domain.hall.entity.Hall;
 import com.dayaeyak.performance.domain.hall.exception.HallErrorCode;
 import com.dayaeyak.performance.domain.hall.repository.HallRepository;
 import com.dayaeyak.performance.domain.performance.dto.request.CreatePerformanceRequestDto;
+import com.dayaeyak.performance.domain.performance.dto.request.UpdatePerformanceRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.response.CreatePerformanceResponseDto;
 import com.dayaeyak.performance.domain.performance.entity.Performance;
+import com.dayaeyak.performance.domain.performance.exception.PerformanceErrorCode;
 import com.dayaeyak.performance.domain.performance.repository.PerformanceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -62,5 +64,77 @@ public class PerformanceService {
 
         // 응답 DTO로 반환
         return new CreatePerformanceResponseDto(savedPerformance.getPerformanceId());
+    }
+
+    /* 공연 수정 (요청 DTO의 필드를 하나씩 확인해서 들어온 값만 수정) */
+    @Transactional
+    public CreatePerformanceResponseDto updatePerformance(Long performanceId, UpdatePerformanceRequestDto requestDto){
+        Performance performance = performanceRepository.findByPerformanceIdAndDeletedAtIsNull(performanceId)
+                .orElseThrow(() -> new CustomException(PerformanceErrorCode.PERFORMANCE_NOT_FOUND));
+
+        // 티켓 오픈 시간이 이미 지났다면 수정 불가
+        if (performance.getTicketOpenAt().before(new Timestamp(System.currentTimeMillis()))) {
+            throw new CustomException(PerformanceErrorCode.PERFORMANCE_ALREADY_OPENED);
+        }
+
+        // 공연명 수정
+        if (requestDto.performanceName() != null && !requestDto.performanceName().isBlank()) {
+            performance.setPerformanceName(requestDto.performanceName());
+        }
+
+        // 공연장 수정
+        if (requestDto.hallId() != null) {
+            Hall hall = hallRepository.findById(requestDto.hallId())
+                    .orElseThrow(() -> new CustomException(HallErrorCode.HALL_NOT_FOUND));
+            performance.setHall(hall);
+        }
+
+        // 출연진 수정
+        if (requestDto.castList() != null && !requestDto.castList().isBlank()) {
+            // 출연진 목록 List로 변환
+            List<String> castNames = Arrays.stream(requestDto.castList().split(",")).toList();
+
+            // 출연진 이름으로 출연진 찾아서 리스트화
+            List<Cast> casts = castNames.stream()
+                    .map(name -> castRepository.findByCastNameAndDeletedAtIsNull(name)
+                            .orElseThrow(()->new CustomException(CastErrorCode.CAST_NOT_FOUND)))
+                    .toList();
+
+            performance.getCastList().clear();
+            performance.getCastList().addAll(casts);
+        }
+
+        // 설명 수정
+        if (requestDto.description() != null && !requestDto.description().isBlank()) {
+            performance.setDescription(requestDto.description());
+        }
+
+        // 타입 수정
+        if (requestDto.type() != null) {
+            performance.setType(requestDto.type());
+        }
+
+        // 관람 등급 수정
+        if (requestDto.grade() != null) {
+            performance.setGrade(requestDto.grade());
+        }
+
+        // 시작일/마감일 수정
+        if (requestDto.startDate() != null) {
+            performance.setStartDate(java.sql.Date.valueOf(requestDto.startDate()));
+        }
+        if (requestDto.endDate() != null) {
+            performance.setEndDate(java.sql.Date.valueOf(requestDto.endDate()));
+        }
+
+        // 티켓 오픈/마감 수정
+        if (requestDto.ticketOpenAt() != null) {
+            performance.setTicketOpenAt(Timestamp.valueOf(requestDto.ticketOpenAt()));
+        }
+        if (requestDto.ticketCloseAt() != null) {
+            performance.setTicketCloseAt(Timestamp.valueOf(requestDto.ticketCloseAt()));
+        }
+
+        return new CreatePerformanceResponseDto(performance.getPerformanceId());
     }
 }

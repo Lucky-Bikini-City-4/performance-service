@@ -3,6 +3,8 @@ package com.dayaeyak.performance.domain.performance.repository;
 import com.dayaeyak.performance.domain.performance.entity.Performance;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PerformanceRepository extends JpaRepository<Performance,Long> {
+import java.util.Optional;
 
+public interface PerformanceRepository extends JpaRepository<Performance,Long> {
+    Optional<Performance> findByPerformanceIdAndDeletedAtIsNull(Long performanceId);
 }
