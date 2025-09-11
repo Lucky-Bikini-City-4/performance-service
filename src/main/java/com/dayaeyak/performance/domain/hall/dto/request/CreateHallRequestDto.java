@@ -3,20 +3,19 @@ package com.dayaeyak.performance.domain.hall.dto.request;
 import com.dayaeyak.performance.domain.hall.enums.Region;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 
 import java.util.List;
 
 public record CreateHallRequestDto(
         @Schema(description = "공연장 이름", example = "KSPO DOME")
         @NotBlank(message = "공연장 이름은 필수 입력값입니다.")
+        @Size(max = 100, message = "공연장 이름은 100자까지 입력 가능합니다.")
         String hallName,
 
         @Schema(description = "공연장 주소", example = "서울특별시 송파구 올림픽로 424")
         @NotBlank(message = "공연장 주소는 필수 입력값입니다.")
+        @Size(max = 100, message = "공연장 주소는 100자까지 입력 가능합니다.")
         String address,
 
         @Schema(description = "공연장 소재 지역", example = "SEOUL")

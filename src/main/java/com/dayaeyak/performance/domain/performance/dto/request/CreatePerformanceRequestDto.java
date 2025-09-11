@@ -5,6 +5,7 @@ import com.dayaeyak.performance.domain.performance.enums.Type;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,6 +17,7 @@ public record CreatePerformanceRequestDto(
 
         @Schema(description = "공연 이름", example = "오페라의 유령")
         @NotBlank(message = "공연 이름은 필수 입력값입니다.")
+        @Size(max = 100, message = "공연 이름은 100자까지 입력 가능합니다.")
         String performanceName,
 
         @Schema(description = "공연장 ID", example = "4")
@@ -28,6 +30,7 @@ public record CreatePerformanceRequestDto(
 
         @Schema(description = "공연 설명", example = "이거완전쩔어용")
         @NotBlank(message = "공연 설명은 필수 입력값입니다.")
+        @Size(max = 255, message = "공연 설명은 255자까지 입력 가능합니다.")
         String description,
 
         @Schema(description = "공연 타입", example = "MUSICAL")
