@@ -24,6 +24,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -69,6 +70,11 @@ public class HallService {
         // 공연장 이름 중복 검색 (자기 자신 제외)
         if (hallRepository.existsByHallNameAndHallIdNotAndDeletedAtIsNull(requestDto.hallName(), hallId)) {
             throw new CustomException(HallErrorCode.HALL_NAME_DUPLICATED);
+        }
+
+        // 관련 공연이 있는지 확인
+        if(performanceRepository.existsByHallAndEndDateGreaterThanEqualAndDeletedAtIsNull(existingHall, LocalDate.now())){
+            throw new CustomException(HallErrorCode.CANNOT_UPDATE_HALL);
         }
 
         // 공연장 정보 수정

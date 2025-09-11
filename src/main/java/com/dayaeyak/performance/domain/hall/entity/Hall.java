@@ -18,7 +18,7 @@ public class Hall extends BaseEntity {
     @Column(nullable = false, updatable = false)
     private Long hallId;
 
-    @Column(length = 100, nullable = false, unique = true)
+    @Column(length = 100, nullable = false)
     private String hallName;
 
     @Column(length = 100, nullable = false)

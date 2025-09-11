@@ -21,7 +21,7 @@ public class Cast extends BaseEntity {
     @Column(nullable = false, updatable = false)
     private Long castId;
 
-    @Column(length = 30, nullable = false, unique = true)
+    @Column(length = 30, nullable = false)
     private String castName;
 
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "castList")

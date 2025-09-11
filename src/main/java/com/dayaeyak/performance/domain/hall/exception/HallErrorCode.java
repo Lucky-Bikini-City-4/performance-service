@@ -13,7 +13,8 @@ public enum HallErrorCode implements ErrorCode {
     HALL_NOT_FOUND(HttpStatus.NOT_FOUND, "공연장 정보를 찾을 수 없습니다."),
     HALL_SECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "공연장 구역 정보를 찾을 수 없습니다."),
     HALL_ID_MISMATCH(HttpStatus.BAD_REQUEST, "공연 구역 ID가 소속된 공연장 ID를 입력해주세요."),
-    CANNOT_DELETE_HALL(HttpStatus.BAD_REQUEST, "연결된 공연이 있어 공연장을 삭제할 수 없습니다.");
+    CANNOT_DELETE_HALL(HttpStatus.BAD_REQUEST, "연결된 공연이 있어 공연장을 삭제할 수 없습니다."),
+    CANNOT_UPDATE_HALL(HttpStatus.BAD_REQUEST, "진행 중인 공연이 있어 공연장을 수정할 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;
