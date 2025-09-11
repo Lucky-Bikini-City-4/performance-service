@@ -5,12 +5,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
-public record CreateHallRequestDto(
+public record UpdateHallRequestDto(
         @Schema(description = "공연장 이름", example = "KSPO DOME")
         @NotBlank(message = "공연장 이름은 필수 입력값입니다.")
         String hallName,
@@ -28,8 +27,8 @@ public record CreateHallRequestDto(
         @Min(value = 0, message = "수용인원은 0 이상이어야 합니다.")
         Integer capacity,
 
-        @Schema(description = "공연장 구역 목록")
+        @Schema(description = "구역 정보 변경 시 기존 구역 정보 초기화")
         @Valid
-        @NotEmpty(message = "최소 1개 이상의 구역이 필요합니다.")
         List<CreateHallSectionDto> sections
-) { }
+) {
+}

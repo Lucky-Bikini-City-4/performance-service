@@ -26,6 +26,10 @@ public class GlobalExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining("\n"));
         return ApiResponse.error(HttpStatus.BAD_REQUEST.value(), errorMessage);
+    }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIllegalArgumentException(IllegalArgumentException e) {
+        return ApiResponse.error(HttpStatus.BAD_REQUEST.value(), "유효하지 않은 요청입니다.");
     }
 }
