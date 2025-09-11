@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -67,6 +68,17 @@ public class Performance extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "cast_id")
     )
     private List<Cast> castList = new ArrayList<>();
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+
+        // 각 출연진의 공연 목록에서 공연(자기 자신) 삭제
+        for (Cast cast : new ArrayList<>(castList)) {
+            cast.getPerformanceList().remove(this);
+        }
+        // 출연진 리스트를 비워서 혼란 방지
+        castList.clear();
+    }
 
     @Builder
     public Performance(Long sellerId, Hall hall, String performanceName, String description, Type type, Grade grade,

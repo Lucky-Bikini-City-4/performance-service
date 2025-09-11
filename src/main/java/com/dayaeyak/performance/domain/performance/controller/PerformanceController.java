@@ -4,6 +4,9 @@ import com.dayaeyak.performance.domain.performance.dto.request.ChangePerformance
 import com.dayaeyak.performance.domain.performance.dto.request.CreatePerformanceRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.request.UpdatePerformanceRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.response.CreatePerformanceResponseDto;
+import com.dayaeyak.performance.domain.performance.dto.response.ReadPerformancePageResponseDto;
+import com.dayaeyak.performance.domain.performance.dto.response.ReadPerformanceResponseDto;
+import com.dayaeyak.performance.domain.performance.enums.Type;
 import com.dayaeyak.performance.domain.performance.service.PerformanceService;
 import com.dayaeyak.performance.utils.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,7 +37,7 @@ public class PerformanceController {
     @PatchMapping("/{performanceId}")
     public ResponseEntity<ApiResponse<CreatePerformanceResponseDto>> updatePerformance(
             @PathVariable Long performanceId,
-            @RequestBody UpdatePerformanceRequestDto requestDto){
+            @RequestBody UpdatePerformanceRequestDto requestDto) {
         return ApiResponse.success(HttpStatus.OK.value(),
                 "공연을 수정했습니다.",
                 performanceService.updatePerformance(performanceId, requestDto));
@@ -44,10 +47,36 @@ public class PerformanceController {
     @PatchMapping("/{performanceId}/activation")
     public ResponseEntity<ApiResponse<Boolean>> changeIsActivated(
             @PathVariable Long performanceId,
-            @Validated @RequestBody ChangePerformanceRequestDto requestDto){
+            @Validated @RequestBody ChangePerformanceRequestDto requestDto) {
         return ApiResponse.success(HttpStatus.OK.value(),
                 "공연의 활성화 상태가 다음과 같이 변경되었습니다.",
-                performanceService.changeIsActivated(performanceId,requestDto));
+                performanceService.changeIsActivated(performanceId, requestDto));
     }
 
+    @Operation(summary = "Read Performance", description = "단건 공연을 조회합니다.")
+    @GetMapping("/{performanceId}")
+    public ResponseEntity<ApiResponse<ReadPerformanceResponseDto>> readPerformance(@PathVariable Long performanceId) {
+        return ApiResponse.success(HttpStatus.OK.value(),
+                "공연 정보를 조회합니다.",
+                performanceService.readPerformance(performanceId));
+    }
+
+    @Operation(summary = "Read Performance List", description = "공연 목록을 조회합니다.")
+    @GetMapping
+    public ResponseEntity<ApiResponse<ReadPerformancePageResponseDto>> readPerformanceList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Type type) {
+        return ApiResponse.success(HttpStatus.OK.value(),
+                "공연 목록을 조회합니다.",
+                performanceService.readPerformanceList(page, size, type));
+    }
+
+    @Operation(summary = "Delete Performance", description = "공연을 삭제합니다.")
+    @DeleteMapping("/{performanceId}")
+    public ResponseEntity<ApiResponse<Void>> deletePerformance(@PathVariable Long performanceId) {
+        return ApiResponse.success(HttpStatus.OK.value(),
+                "공연을 삭제했습니다.",
+                performanceService.deletePerformance(performanceId));
+    }
 }

@@ -1,6 +1,8 @@
 package com.dayaeyak.performance.domain.performance.service;
 
+import com.dayaeyak.performance.common.dto.PageInfoDto;
 import com.dayaeyak.performance.common.exception.CustomException;
+import com.dayaeyak.performance.common.exception.GlobalErrorCode;
 import com.dayaeyak.performance.domain.cast.entity.Cast;
 import com.dayaeyak.performance.domain.cast.exception.CastErrorCode;
 import com.dayaeyak.performance.domain.cast.repository.CastRepository;
@@ -11,10 +13,17 @@ import com.dayaeyak.performance.domain.performance.dto.request.ChangePerformance
 import com.dayaeyak.performance.domain.performance.dto.request.CreatePerformanceRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.request.UpdatePerformanceRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.response.CreatePerformanceResponseDto;
+import com.dayaeyak.performance.domain.performance.dto.response.ReadPerformancePageResponseDto;
+import com.dayaeyak.performance.domain.performance.dto.response.ReadPerformanceResponseDto;
 import com.dayaeyak.performance.domain.performance.entity.Performance;
+import com.dayaeyak.performance.domain.performance.enums.Type;
 import com.dayaeyak.performance.domain.performance.exception.PerformanceErrorCode;
 import com.dayaeyak.performance.domain.performance.repository.PerformanceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -153,5 +162,58 @@ public class PerformanceService {
 
         performance.setIsActivated(requestDto.isActivated());
         return performance.getIsActivated();
+    }
+
+    /* 공연 단건 조회 */
+    public ReadPerformanceResponseDto readPerformance(Long performanceId) {
+        Performance performance = performanceRepository.findByPerformanceIdAndDeletedAtIsNull(performanceId)
+                .orElseThrow(() -> new CustomException(PerformanceErrorCode.PERFORMANCE_NOT_FOUND));
+
+        return ReadPerformanceResponseDto.from(performance);
+    }
+
+    /* 공연 페이징 조회 */
+    public ReadPerformancePageResponseDto readPerformanceList(int page, int size, Type type) {
+        if(page < 0 || size < 0){
+            throw new CustomException(GlobalErrorCode.INVALID_PAGE_OR_SIZE);
+        }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("startDate").descending());
+        Page<Performance> performances;
+
+        // 공연 타입별 검색, 타입이 없을 경우 전체 타입에서 검색
+        if (type == null) {
+            performances = performanceRepository.findByDeletedAtIsNull(pageable);
+        } else {
+            performances = performanceRepository.findByDeletedAtIsNullAndType(pageable, type);
+        }
+
+        // PageInfo 생성
+        PageInfoDto pageInfo = new PageInfoDto(
+                performances.getNumber() + 1, // 0-base -> 1-base
+                performances.getSize(),
+                performances.getTotalElements(),
+                performances.getTotalPages(),
+                performances.isLast()
+        );
+
+        // List<DTO> 형태로 변환
+        List<ReadPerformanceResponseDto> data = performances.getContent()
+                .stream()
+                .map(ReadPerformanceResponseDto::from)
+                .toList();
+
+        return new ReadPerformancePageResponseDto(pageInfo, data);
+    }
+
+    /* 공연 삭제 */
+    @Transactional
+    public Void deletePerformance(Long performanceId) {
+        Performance performance = performanceRepository.findByPerformanceIdAndDeletedAtIsNull(performanceId)
+                .orElseThrow(() -> new CustomException(PerformanceErrorCode.PERFORMANCE_NOT_FOUND));
+
+        // 공연 삭제
+        performance.delete();
+        return null;
     }
 }
