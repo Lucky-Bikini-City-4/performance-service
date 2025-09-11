@@ -1,5 +1,6 @@
-package com.dayaeyak.performance.domain.hall;
+package com.dayaeyak.performance.domain.hall.controller;
 
+import com.dayaeyak.performance.domain.hall.service.HallService;
 import com.dayaeyak.performance.domain.hall.dto.request.CreateHallRequestDto;
 import com.dayaeyak.performance.domain.hall.dto.request.UpdateHallRequestDto;
 import com.dayaeyak.performance.domain.hall.dto.response.CreateHallResponseDto;

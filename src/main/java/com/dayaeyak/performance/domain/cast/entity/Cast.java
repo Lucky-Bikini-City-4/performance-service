@@ -3,6 +3,7 @@ package com.dayaeyak.performance.domain.cast.entity;
 import com.dayaeyak.performance.common.entity.BaseEntity;
 import com.dayaeyak.performance.domain.performance.entity.Performance;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -11,7 +12,7 @@ import java.util.List;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "casts")
 public class Cast extends BaseEntity {
     @Id

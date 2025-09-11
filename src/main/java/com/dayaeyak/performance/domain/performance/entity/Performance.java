@@ -6,6 +6,8 @@ import com.dayaeyak.performance.domain.hall.entity.Hall;
 import com.dayaeyak.performance.domain.performance.enums.Grade;
 import com.dayaeyak.performance.domain.performance.enums.Type;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -16,7 +18,7 @@ import java.util.List;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "performances")
 public class Performance extends BaseEntity {
     @Id
@@ -67,4 +69,34 @@ public class Performance extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "cast_id")
     )
     private List<Cast> castList = new ArrayList<>();
+
+    @Builder
+    public Performance(Long sellerId, Hall hall, String performanceName, String description, Type type, Grade grade,
+                       Date startDate, Date endDate, Timestamp ticketOpenAt, Timestamp ticketCloseAt, Boolean isActivated) {
+        this.sellerId = sellerId;
+        this.hall = hall;
+        this.performanceName = performanceName;
+        this.description = description;
+        this.type = type;
+        this.grade = grade;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.ticketOpenAt = ticketOpenAt;
+        this.ticketCloseAt = ticketCloseAt;
+        this.isActivated = isActivated;
+    }
+
+    public void update(Long sellerId, Hall hall, String performanceName, String description, Type type, Grade grade,
+                       Date startDate, Date endDate, Timestamp ticketOpenAt, Timestamp ticketCloseAt, Boolean isActivated) {
+        this.hall = hall;
+        this.performanceName = performanceName;
+        this.description = description;
+        this.type = type;
+        this.grade = grade;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.ticketOpenAt = ticketOpenAt;
+        this.ticketCloseAt = ticketCloseAt;
+        this.isActivated = isActivated;
+    }
 }

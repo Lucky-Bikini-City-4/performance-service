@@ -1,4 +1,4 @@
-package com.dayaeyak.performance.domain.hall;
+package com.dayaeyak.performance.domain.hall.service;
 
 import com.dayaeyak.performance.common.exception.CustomException;
 import com.dayaeyak.performance.common.exception.GlobalErrorCode;

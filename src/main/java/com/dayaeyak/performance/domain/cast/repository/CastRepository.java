@@ -14,4 +14,5 @@ public interface CastRepository extends JpaRepository<Cast,Long> {
     Boolean existsByCastNameAndCastIdNotAndDeletedAtIsNull(String castName, Long castId);
     Page<Cast> findByDeletedAtIsNullOrderByCreatedAtDesc(Pageable pageable);
     List<Cast> findByDeletedAtIsNullOrderByCreatedAtDesc();
+    Optional<Cast> findByCastNameAndDeletedAtIsNull(String castName);
 }
