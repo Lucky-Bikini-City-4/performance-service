@@ -25,23 +25,23 @@ public class Hall extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Region city;
+    private Region region;
 
     @Column(nullable = false)
     private Integer capacity;
 
     @Builder
-    public Hall(String hallName, String address, Region city, Integer capacity) {
+    public Hall(String hallName, String address, Region region, Integer capacity) {
         this.hallName = hallName;
         this.address = address;
-        this.city = city;
+        this.region = region;
         this.capacity = capacity;
     }
 
-    public void update(String hallName, String address, Region city, Integer capacity) {
+    public void update(String hallName, String address, Region region, Integer capacity) {
         this.hallName = hallName;
         this.address = address;
-        this.city = city;
+        this.region = region;
         this.capacity = capacity;
     }
 }

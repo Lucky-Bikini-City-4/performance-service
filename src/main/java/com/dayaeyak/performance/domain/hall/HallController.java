@@ -50,15 +50,15 @@ public class HallController {
                 hallService.readHall(hallId));
     }
 
-    @Operation(summary = "Read Hall", description = "공연장(기본 정보) 목록을 조회합니다.")
+    @Operation(summary = "Read Hall List", description = "공연장(기본 정보) 목록을 조회합니다.")
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ReadHallResponseDto>>> readHall(
+    public ResponseEntity<ApiResponse<List<ReadHallResponseDto>>> readHallList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) Region city){
+            @RequestParam(required = false) Region region){
         return ApiResponse.success(HttpStatus.OK.value(),
                 "공연장 목록을 조회합니다.",
-                hallService.readHallList(page, size, city));
+                hallService.readHallList(page, size, region));
     }
 
     @Operation(summary = "Delete Hall", description = "공연장 정보를 삭제합니다.")

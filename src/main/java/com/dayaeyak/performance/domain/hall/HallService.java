@@ -41,7 +41,7 @@ public class HallService {
         Hall hall = Hall.builder()
                 .hallName(requestDto.hallName())
                 .address(requestDto.address())
-                .city(requestDto.city())
+                .region(requestDto.region())
                 .capacity(requestDto.capacity())
                 .build();
         Hall savedHall = hallRepository.save(hall);
@@ -67,7 +67,7 @@ public class HallService {
         }
 
         // 공연장 정보 수정
-        existingHall.update(requestDto.hallName(), requestDto.address(), requestDto.city(), requestDto.capacity());
+        existingHall.update(requestDto.hallName(), requestDto.address(), requestDto.region(), requestDto.capacity());
 
         // 구역 정보가 있으면 기존 구역 삭제 후 새로 저장
         if(requestDto.sections() != null && !requestDto.sections().isEmpty()) {
@@ -90,23 +90,23 @@ public class HallService {
     }
 
     /* 공연장 목록 조회 */
-    public List<ReadHallResponseDto> readHallList(int page, int size, Region city) {
+    public List<ReadHallResponseDto> readHallList(int page, int size, Region region) {
         if(page < 0 || size < 0){
             throw new CustomException(GlobalErrorCode.INVALID_PAGE_OR_SIZE);
         }
 
         List<Hall> halls;
         if(size == 0){
-            if(city != null){       // 지역별 전체 공연장 목록 조회
-                halls = hallRepository.findByCityAndDeletedAtIsNullOrderByCreatedAtDesc(city);
+            if(region != null){       // 지역별 전체 공연장 목록 조회
+                halls = hallRepository.findByRegionAndDeletedAtIsNullOrderByCreatedAtDesc(region);
             } else{                 // 전체 공연장 목록 조회
                 halls = hallRepository.findByDeletedAtIsNullOrderByCreatedAtDesc();
             }
         } else{
             Pageable pageable = PageRequest.of(page, size);
             Page<Hall> hallPage;
-            if (city != null) {     // 지역별 공연장 페이징 조회
-                hallPage = hallRepository.findByCityAndDeletedAtIsNullOrderByCreatedAtDesc(city, pageable);
+            if (region != null) {     // 지역별 공연장 페이징 조회
+                hallPage = hallRepository.findByRegionAndDeletedAtIsNullOrderByCreatedAtDesc(region, pageable);
             } else {                // 공연장 페이징 조회
                 hallPage = hallRepository.findByDeletedAtIsNullOrderByCreatedAtDesc(pageable);
             }
@@ -118,7 +118,7 @@ public class HallService {
                         hall.getHallId(),
                         hall.getHallName(),
                         hall.getAddress(),
-                        hall.getCity(),
+                        hall.getRegion(),
                         hall.getCapacity()))
                 .toList();
     }

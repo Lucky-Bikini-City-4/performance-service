@@ -21,7 +21,7 @@ public record CreateHallRequestDto(
 
         @Schema(description = "공연장 소재 지역", example = "SEOUL")
         @NotNull(message = "공연장이 위치한 지역을 입력해주세요.")
-        Region city,
+        Region region,
 
         @Schema(description = "수용 인원", example = "12000")
         @NotNull(message = "공연장의 수용인원을 입력해주세요.")

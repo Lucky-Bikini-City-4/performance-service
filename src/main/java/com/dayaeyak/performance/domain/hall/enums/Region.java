@@ -20,5 +20,5 @@ public enum Region {
     BUSAN("부산"),
     JEJU("제주");
 
-    private final String city;
+    private final String region;
 }
