@@ -212,6 +212,11 @@ public class PerformanceService {
         Performance performance = performanceRepository.findByPerformanceIdAndDeletedAtIsNull(performanceId)
                 .orElseThrow(() -> new CustomException(PerformanceErrorCode.PERFORMANCE_NOT_FOUND));
 
+        // 티켓 오픈 일시가 이미 지났다면 삭제 불가
+        if (performance.getTicketOpenAt().before(new Timestamp(System.currentTimeMillis()))) {
+            throw new CustomException(PerformanceErrorCode.PERFORMANCE_ALREADY_OPENED);
+        }
+
         // 공연 삭제
         performance.delete();
         return null;
