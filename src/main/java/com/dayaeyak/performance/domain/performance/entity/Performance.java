@@ -16,7 +16,6 @@ import java.util.List;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "performances")
 public class Performance extends BaseEntity {
@@ -94,5 +93,45 @@ public class Performance extends BaseEntity {
         this.ticketOpenAt = ticketOpenAt;
         this.ticketCloseAt = ticketCloseAt;
         this.isActivated = isActivated;
+    }
+
+    public void updatePerformanceName(String name) {
+        this.performanceName = name;
+    }
+
+    public void changeHall(Hall hall) {
+        this.hall = hall;
+    }
+
+    public void updateDescription(String description) {
+        this.description = description;
+    }
+
+    public void updateType(Type type) {
+        this.type = type;
+    }
+
+    public void updateGrade(Grade grade) {
+        this.grade = grade;
+    }
+
+    public void updateStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
+    public void updateEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
+    public void updateTicketOpenAt(Timestamp ticketOpenAt) {
+        this.ticketOpenAt = ticketOpenAt;
+    }
+
+    public void updateTicketCloseAt(Timestamp ticketCloseAt) {
+        this.ticketCloseAt = ticketCloseAt;
+    }
+
+    public void updateActivation(Boolean activation) {
+        this.isActivated = activation;
     }
 }

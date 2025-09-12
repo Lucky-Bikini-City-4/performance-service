@@ -27,6 +27,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
@@ -89,14 +90,14 @@ public class PerformanceService {
 
         // 공연명 수정
         if (requestDto.performanceName() != null && !requestDto.performanceName().isBlank()) {
-            performance.setPerformanceName(requestDto.performanceName());
+            performance.updatePerformanceName(requestDto.performanceName());
         }
 
         // 공연장 수정
         if (requestDto.hallId() != null) {
             Hall hall = hallRepository.findById(requestDto.hallId())
                     .orElseThrow(() -> new CustomException(HallErrorCode.HALL_NOT_FOUND));
-            performance.setHall(hall);
+            performance.changeHall(hall);
         }
 
         // 출연진 수정
@@ -110,39 +111,79 @@ public class PerformanceService {
                             .orElseThrow(()->new CustomException(CastErrorCode.CAST_NOT_FOUND)))
                     .toList();
 
+            // 기존 관계 정리
+            for (Cast cast : performance.getCastList()) {
+                cast.getPerformanceList().remove(performance);
+            }
+
             performance.getCastList().clear();
             performance.getCastList().addAll(casts);
+
+            // 새로운 관계 설정
+            for (Cast cast : casts) {
+                if (!cast.getPerformanceList().contains(performance)) {
+                    cast.getPerformanceList().add(performance);
+                }
+            }
         }
 
         // 설명 수정
         if (requestDto.description() != null && !requestDto.description().isBlank()) {
-            performance.setDescription(requestDto.description());
+            performance.updateDescription(requestDto.description());
         }
 
         // 타입 수정
         if (requestDto.type() != null) {
-            performance.setType(requestDto.type());
+            performance.updateType(requestDto.type());
         }
 
         // 관람 등급 수정
         if (requestDto.grade() != null) {
-            performance.setGrade(requestDto.grade());
+            performance.updateGrade(requestDto.grade());
         }
 
         // 시작일/마감일 수정
         if (requestDto.startDate() != null) {
-            performance.setStartDate(java.sql.Date.valueOf(requestDto.startDate()));
+            Date startDate = java.sql.Date.valueOf(requestDto.startDate());
+
+            // 종료일이 이미 설정되어 있다면 시작일이 종료일보다 이후가 되지 않도록 검증
+            if (performance.getEndDate() != null && startDate.after(performance.getEndDate())) {
+                throw new CustomException(PerformanceErrorCode.INVALID_DATE_RANGE);
+            }
+
+            performance.updateStartDate(startDate);
         }
         if (requestDto.endDate() != null) {
-            performance.setEndDate(java.sql.Date.valueOf(requestDto.endDate()));
+            Date endDate = java.sql.Date.valueOf(requestDto.endDate());
+
+            // 시작일이 이미 설정되어 있다면 종료일이 시작일보다 이전이 되지 않도록 검증
+            if (performance.getStartDate() != null && endDate.before(performance.getStartDate())) {
+                throw new CustomException(PerformanceErrorCode.INVALID_DATE_RANGE);
+            }
+
+            performance.updateEndDate(endDate);
         }
 
         // 티켓 오픈/마감 수정
         if (requestDto.ticketOpenAt() != null) {
-            performance.setTicketOpenAt(Timestamp.valueOf(requestDto.ticketOpenAt()));
+            Timestamp ticketOpenAt = Timestamp.valueOf(requestDto.ticketOpenAt());
+
+            // 티켓 마감 시간이 이미 설정되어 있다면 오픈 시간이 마감 시간보다 이후가 되지 않도록 검증
+            if (performance.getTicketCloseAt() != null && ticketOpenAt.after(performance.getTicketCloseAt())) {
+                throw new CustomException(PerformanceErrorCode.INVALID_TICKET_TIME_RANGE);
+            }
+
+            performance.updateTicketOpenAt(ticketOpenAt);
         }
         if (requestDto.ticketCloseAt() != null) {
-            performance.setTicketCloseAt(Timestamp.valueOf(requestDto.ticketCloseAt()));
+            Timestamp ticketCloseAt = Timestamp.valueOf(requestDto.ticketCloseAt());
+
+            // 티켓 오픈 시간이 이미 설정되어 있다면 마감 시간이 오픈 시간보다 이전이 되지 않도록 검증
+            if (performance.getTicketOpenAt() != null && ticketCloseAt.before(performance.getTicketOpenAt())) {
+                throw new CustomException(PerformanceErrorCode.INVALID_TICKET_TIME_RANGE);
+            }
+
+            performance.updateTicketCloseAt(ticketCloseAt);
         }
 
         return new CreatePerformanceResponseDto(performance.getPerformanceId());
@@ -160,7 +201,7 @@ public class PerformanceService {
             throw new CustomException(PerformanceErrorCode.CANNOT_CHANGE_ACTIVATION);
         }
 
-        performance.setIsActivated(requestDto.isActivated());
+        performance.updateActivation(requestDto.isActivated());
         return performance.getIsActivated();
     }
 
