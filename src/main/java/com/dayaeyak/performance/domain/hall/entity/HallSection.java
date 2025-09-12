@@ -27,20 +27,15 @@ public class HallSection extends BaseEntity {
     @Column(nullable = false)
     private Integer seats;
 
-    @Column(nullable = false)
-    private Integer seatPrice;
-
     @Builder
-    public HallSection(Hall hall, String sectionName, Integer seats, Integer seatPrice) {
+    public HallSection(Hall hall, String sectionName, Integer seats) {
         this.hall = hall;
         this.sectionName = sectionName;
         this.seats = seats;
-        this.seatPrice = seatPrice;
     }
 
-    public void update(String sectionName, Integer seats, Integer seatPrice) {
+    public void update(String sectionName, Integer seats) {
         this.sectionName = sectionName;
         this.seats = seats;
-        this.seatPrice = seatPrice;
     }
 }
