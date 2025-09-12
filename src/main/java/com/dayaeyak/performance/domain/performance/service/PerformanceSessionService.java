@@ -4,6 +4,7 @@ import com.dayaeyak.performance.common.exception.CustomException;
 import com.dayaeyak.performance.domain.performance.dto.request.CreateSessionRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.request.UpdateSessionRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.response.CreateSessionResponseDto;
+import com.dayaeyak.performance.domain.performance.dto.response.ReadSessionResponseDto;
 import com.dayaeyak.performance.domain.performance.entity.Performance;
 import com.dayaeyak.performance.domain.performance.entity.PerformanceSession;
 import com.dayaeyak.performance.domain.performance.exception.PerformanceErrorCode;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -77,6 +79,35 @@ public class PerformanceSessionService {
         session.update(requestDto.date(), requestDto.time());
 
         return new CreateSessionResponseDto(session.getPerformanceSessionId());
+    }
+
+    /* 공연 회차 단건 조회 */
+    public ReadSessionResponseDto readSession(Long performanceId, Long sessionId){
+        // 공연 회차 조회
+        PerformanceSession session = performanceSessionRepository.findByPerformanceSessionIdAndDeletedAtIsNull(sessionId)
+                .orElseThrow(() -> new CustomException(PerformanceErrorCode.SESSION_NOT_FOUND));
+
+        // 공연 회차가 해당 공연에 속하는지 검증
+        if (!Objects.equals(session.getPerformance().getPerformanceId(), performanceId)) {
+            throw new CustomException(PerformanceErrorCode.MISMATCHED_PERFORMANCE_AND_SESSION);
+        }
+
+        return ReadSessionResponseDto.from(session);
+    }
+
+    /* 공연 회차 전체 조회 */
+    public List<ReadSessionResponseDto> readSessionList(Long performanceId){
+        // 공연 ID로 공연 찾기
+        Performance performance = performanceRepository.findByPerformanceIdAndDeletedAtIsNull(performanceId)
+                .orElseThrow(() -> new CustomException(PerformanceErrorCode.PERFORMANCE_NOT_FOUND));
+
+        // 해당 공연의 전체 회차 조회
+        List<PerformanceSession> sessions = performanceSessionRepository.findByPerformanceAndDeletedAtIsNull(performance);
+
+        // 응답 DTO 리스트 형태로 반환
+        return sessions.stream()
+                .map(ReadSessionResponseDto::from)
+                .toList();
     }
 
 
