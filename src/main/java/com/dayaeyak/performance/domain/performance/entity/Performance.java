@@ -6,17 +6,18 @@ import com.dayaeyak.performance.domain.hall.entity.Hall;
 import com.dayaeyak.performance.domain.performance.enums.Grade;
 import com.dayaeyak.performance.domain.performance.enums.Type;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "performances")
 public class Performance extends BaseEntity {
     @Id
@@ -67,4 +68,31 @@ public class Performance extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "cast_id")
     )
     private List<Cast> castList = new ArrayList<>();
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+
+        // 각 출연진의 공연 목록에서 공연(자기 자신) 삭제
+        for (Cast cast : new ArrayList<>(castList)) {
+            cast.getPerformanceList().remove(this);
+        }
+        // 출연진 리스트를 비워서 혼란 방지
+        castList.clear();
+    }
+
+    @Builder
+    public Performance(Long sellerId, Hall hall, String performanceName, String description, Type type, Grade grade,
+                       Date startDate, Date endDate, Timestamp ticketOpenAt, Timestamp ticketCloseAt, Boolean isActivated) {
+        this.sellerId = sellerId;
+        this.hall = hall;
+        this.performanceName = performanceName;
+        this.description = description;
+        this.type = type;
+        this.grade = grade;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.ticketOpenAt = ticketOpenAt;
+        this.ticketCloseAt = ticketCloseAt;
+        this.isActivated = isActivated;
+    }
 }
