@@ -118,8 +118,7 @@ public class PerformanceSessionService {
     @Transactional
     public CreateSessionResponseDto updateSession(Long performanceId, Long sessionId, UpdateSessionRequestDto requestDto){
         // 공연 회차 조회
-        PerformanceSession session = performanceSessionRepository.findByPerformanceSessionIdAndDeletedAtIsNull(sessionId)
-                .orElseThrow(() -> new CustomException(PerformanceErrorCode.SESSION_NOT_FOUND));
+        PerformanceSession session = findSessionById(sessionId);
 
         // 공연 회차가 해당 공연에 속하는지 검증
         if (!Objects.equals(session.getPerformance().getPerformanceId(), performanceId)) {
@@ -174,5 +173,52 @@ public class PerformanceSessionService {
                 .toList();
     }
 
+    /* 공연 회차 삭제 */
+    @Transactional
+    public Void deleteSession(Long performanceId, Long sessionId){
+        // 공연 회차 조회
+        PerformanceSession session = findSessionById(sessionId);
+
+        // 공연 회차가 해당 공연에 속하는지 검증
+        if (!Objects.equals(session.getPerformance().getPerformanceId(), performanceId)) {
+            throw new CustomException(PerformanceErrorCode.MISMATCHED_PERFORMANCE_AND_SESSION);
+        }
+
+        // 공연 ID로 공연 찾기
+        Performance performance = performanceRepository.findByPerformanceIdAndDeletedAtIsNull(performanceId)
+                .orElseThrow(() -> new CustomException(PerformanceErrorCode.PERFORMANCE_NOT_FOUND));
+
+        // 티켓 오픈 시간이 이미 지났다면 삭제 불가
+        if (performance.getTicketOpenAt().before(new Timestamp(System.currentTimeMillis()))) {
+            throw new CustomException(PerformanceErrorCode.PERFORMANCE_ALREADY_OPENED);
+        }
+
+        // 해당 회차의 공연 구역들 조회
+        List<PerformanceSection> performanceSections = performanceSectionRepository.findByPerformanceSessionAndDeletedAtIsNull(session);
+
+        // 공연 좌석들 소프트 삭제
+        for (PerformanceSection performanceSection : performanceSections) {
+            List<PerformanceSeat> seats = performanceSeatRepository.findByPerformanceSectionAndDeletedAtIsNull(performanceSection);
+            for (PerformanceSeat seat : seats) {
+                seat.delete();
+            }
+        }
+
+        // 공연 구역들 소프트 삭제
+        for (PerformanceSection performanceSection : performanceSections) {
+            performanceSection.delete();
+        }
+
+        // 공연 회차 소프트 삭제
+        session.delete();
+
+        return null;
+    }
+
+    // 공연 회차 ID로 검색
+    private PerformanceSession findSessionById(Long sessionId){
+        return performanceSessionRepository.findByPerformanceSessionIdAndDeletedAtIsNull(sessionId)
+                .orElseThrow(() -> new CustomException(PerformanceErrorCode.SESSION_NOT_FOUND));
+    }
 
 }
