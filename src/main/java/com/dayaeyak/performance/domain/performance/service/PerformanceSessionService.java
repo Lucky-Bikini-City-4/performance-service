@@ -1,14 +1,20 @@
 package com.dayaeyak.performance.domain.performance.service;
 
 import com.dayaeyak.performance.common.exception.CustomException;
+import com.dayaeyak.performance.domain.hall.entity.HallSection;
+import com.dayaeyak.performance.domain.hall.repository.HallSectionRepository;
 import com.dayaeyak.performance.domain.performance.dto.request.CreateSessionRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.request.UpdateSessionRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.response.CreateSessionResponseDto;
 import com.dayaeyak.performance.domain.performance.dto.response.ReadSessionResponseDto;
 import com.dayaeyak.performance.domain.performance.entity.Performance;
+import com.dayaeyak.performance.domain.performance.entity.PerformanceSeat;
+import com.dayaeyak.performance.domain.performance.entity.PerformanceSection;
 import com.dayaeyak.performance.domain.performance.entity.PerformanceSession;
 import com.dayaeyak.performance.domain.performance.exception.PerformanceErrorCode;
 import com.dayaeyak.performance.domain.performance.repository.PerformanceRepository;
+import com.dayaeyak.performance.domain.performance.repository.PerformanceSeatRepository;
+import com.dayaeyak.performance.domain.performance.repository.PerformanceSectionRepository;
 import com.dayaeyak.performance.domain.performance.repository.PerformanceSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +32,9 @@ import java.util.Objects;
 public class PerformanceSessionService {
     private final PerformanceSessionRepository performanceSessionRepository;
     private final PerformanceRepository performanceRepository;
+    private final HallSectionRepository hallSectionRepository;
+    private final PerformanceSectionRepository performanceSectionRepository;
+    private final PerformanceSeatRepository performanceSeatRepository;
 
     /* 공연 회차 생성 */
     @Transactional
@@ -45,6 +56,59 @@ public class PerformanceSessionService {
         // 공연 회차 엔티티 생성 및 저장
         PerformanceSession session = new PerformanceSession(performance, requestDto.date(), requestDto.time());
         PerformanceSession savedSession = performanceSessionRepository.save(session);
+
+        // 공연장 구역 정보 조회
+        List<HallSection> hallSections = hallSectionRepository.findByHallAndDeletedAtIsNull(performance.getHall());
+
+        // 요청 DTO의 구역 이름과 실제 공연장 구역 매칭 시작
+        Set<String> hallSectionNames = hallSections.stream()
+                .map(HallSection::getSectionName)
+                .collect(Collectors.toSet());
+
+        Set<String> requestSectionNames = requestDto.sectionPrices().keySet();
+
+        // DTO에 있는 구역이 실제 공연장에 없는 경우 예외 처리
+        Set<String> invalidSections = requestSectionNames.stream()
+                .filter(sectionName -> !hallSectionNames.contains(sectionName))
+                .collect(Collectors.toSet());
+        if (!invalidSections.isEmpty()) {
+            throw new CustomException(PerformanceErrorCode.INVALID_SECTION_NAMES);
+        }
+
+        // 공연장에 있는 구역이 요청 DTO에 없을 때
+        Set<String> missingSections = hallSectionNames.stream()
+                .filter(sectionName -> !requestSectionNames.contains(sectionName))
+                .collect(Collectors.toSet());
+        if (!missingSections.isEmpty()) {
+            throw new CustomException(PerformanceErrorCode.MISSING_SECTION_PRICES);
+        }
+
+        // 각 공연장 구역에 대해 공연 구역 및 좌석 생성
+        for (HallSection hallSection : hallSections) {
+            String sectionName = hallSection.getSectionName();
+            Integer seatPrice = requestDto.sectionPrices().get(sectionName);
+
+            // 가격이 0 이하인 경우 예외 처리
+            if (seatPrice <= 0) {
+                throw new CustomException(PerformanceErrorCode.INVALID_SEAT_PRICE);
+            }
+
+            // 공연 구역 생성
+            PerformanceSection performanceSection = PerformanceSection.builder()
+                    .performanceSession(savedSession)
+                    .sectionName(sectionName)
+                    .seatPrice(seatPrice)
+                    .remainingSeats(hallSection.getSeats())
+                    .build();
+
+            PerformanceSection savedPerformanceSection = performanceSectionRepository.save(performanceSection);
+
+            // 해당 구역의 모든 좌석 생성
+            for (int seatNumber = 1; seatNumber <= hallSection.getSeats(); seatNumber++) {
+                PerformanceSeat performanceSeat = new PerformanceSeat(savedPerformanceSection, seatNumber);
+                performanceSeatRepository.save(performanceSeat);
+            }
+        }
 
         // 응답 DTO 반환
         return new CreateSessionResponseDto(savedSession.getPerformanceSessionId());
