@@ -63,4 +63,14 @@ public class PerformanceSessionController {
                 performanceSessionService.readSessionList(performanceId));
     }
 
+    @Operation(summary = "Delete Performance Session", description = "공연 회차를 삭제합니다.")
+    @DeleteMapping("/{sessionId}")
+    public ResponseEntity<ApiResponse<Void>> deleteSession(
+            @PathVariable Long performanceId,
+            @PathVariable Long sessionId){
+        return ApiResponse.success(HttpStatus.OK.value(),
+                "해당 공연 회차를 삭제합니다.",
+                performanceSessionService.deleteSession(performanceId, sessionId));
+    }
+
 }
