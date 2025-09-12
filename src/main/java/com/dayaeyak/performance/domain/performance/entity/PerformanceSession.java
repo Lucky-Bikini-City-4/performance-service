@@ -6,8 +6,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.sql.Date;
-import java.sql.Time;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 @Getter
@@ -24,18 +24,18 @@ public class PerformanceSession extends BaseEntity {
     private Performance performance;
 
     @Column(nullable = false)
-    private Date date;
+    private LocalDate date;
 
     @Column(nullable = false)
-    private Time time;
+    private LocalTime time;
 
-    public PerformanceSession(Performance performance, Date date, Time time) {
+    public PerformanceSession(Performance performance, LocalDate date, LocalTime time) {
         this.performance = performance;
         this.date = date;
         this.time = time;
     }
 
-    public void update(Date date, Time time) {
+    public void update(LocalDate date, LocalTime time) {
         this.date = date;
         this.time = time;
     }

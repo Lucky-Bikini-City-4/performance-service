@@ -12,7 +12,11 @@ public enum PerformanceErrorCode implements ErrorCode {
     CANNOT_CHANGE_ACTIVATION(HttpStatus.BAD_REQUEST, "지금은 공연의 활성화 상태를 변경할 수 없습니다."),
     PERFORMANCE_NOT_FOUND(HttpStatus.BAD_REQUEST, "공연 정보를 찾을 수 없습니다."),
     INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "공연 시작일과 종료일의 범위가 올바르지 않습니다."),
-    INVALID_TICKET_TIME_RANGE(HttpStatus.BAD_REQUEST, "티켓오픈일시와 마감일시의 범위가 올바르지 않습니다.");
+    INVALID_TICKET_TIME_RANGE(HttpStatus.BAD_REQUEST, "티켓오픈일시와 마감일시의 범위가 올바르지 않습니다."),
+
+    MISMATCHED_PERFORMANCE_ID(HttpStatus.BAD_REQUEST, "공연 ID가 일치하지 않습니다."),
+    INVALID_SESSION_DATE(HttpStatus.BAD_REQUEST, "공연 회차 날짜는 공연 시작일과 마감일 사이여야 합니다.");
+
 
     private final HttpStatus httpStatus;
     private final String message;

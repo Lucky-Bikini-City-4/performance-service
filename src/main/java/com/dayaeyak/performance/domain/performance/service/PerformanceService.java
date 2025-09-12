@@ -27,8 +27,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -64,8 +64,8 @@ public class PerformanceService {
                 .description(requestDto.description())
                 .type(requestDto.type())
                 .grade(requestDto.grade())
-                .startDate(java.sql.Date.valueOf(requestDto.startDate()))
-                .endDate(java.sql.Date.valueOf(requestDto.endDate()))
+                .startDate(requestDto.startDate())
+                .endDate(requestDto.endDate())
                 .ticketOpenAt(Timestamp.valueOf(requestDto.ticketOpenAt()))
                 .ticketCloseAt(Timestamp.valueOf(requestDto.ticketCloseAt()))
                 .isActivated(requestDto.isActivated() == null || requestDto.isActivated())
@@ -144,20 +144,20 @@ public class PerformanceService {
 
         // 시작일/마감일 수정
         if (requestDto.startDate() != null) {
-            Date startDate = java.sql.Date.valueOf(requestDto.startDate());
+            LocalDate startDate = requestDto.startDate();
 
             // 종료일이 이미 설정되어 있다면 시작일이 종료일보다 이후가 되지 않도록 검증
-            if (performance.getEndDate() != null && startDate.after(performance.getEndDate())) {
+            if (performance.getEndDate() != null && startDate.isAfter(performance.getEndDate())) {
                 throw new CustomException(PerformanceErrorCode.INVALID_DATE_RANGE);
             }
 
             performance.updateStartDate(startDate);
         }
         if (requestDto.endDate() != null) {
-            Date endDate = java.sql.Date.valueOf(requestDto.endDate());
+            LocalDate endDate = requestDto.endDate();
 
             // 시작일이 이미 설정되어 있다면 종료일이 시작일보다 이전이 되지 않도록 검증
-            if (performance.getStartDate() != null && endDate.before(performance.getStartDate())) {
+            if (performance.getStartDate() != null && endDate.isBefore(performance.getStartDate())) {
                 throw new CustomException(PerformanceErrorCode.INVALID_DATE_RANGE);
             }
 
