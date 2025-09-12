@@ -1,6 +1,7 @@
 package com.dayaeyak.performance.common.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.data.domain.Page;
 
 public record PageInfoDto(
         @Schema(description = "현재 페이지 번호", example = "1")
@@ -17,4 +18,14 @@ public record PageInfoDto(
 
         @Schema(description = "마지막 페이지 여부", example = "false")
         boolean last) {
+
+        public static PageInfoDto from(Page<?> page) {
+                return new PageInfoDto(
+                        page.getNumber() + 1,
+                        page.getSize(),
+                        page.getTotalElements(),
+                        page.getTotalPages(),
+                        page.isLast()
+                );
+        }
 }

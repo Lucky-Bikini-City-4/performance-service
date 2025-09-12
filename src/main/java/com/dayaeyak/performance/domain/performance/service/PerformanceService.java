@@ -189,13 +189,7 @@ public class PerformanceService {
         }
 
         // PageInfo 생성
-        PageInfoDto pageInfo = new PageInfoDto(
-                performances.getNumber() + 1, // 0-base -> 1-base
-                performances.getSize(),
-                performances.getTotalElements(),
-                performances.getTotalPages(),
-                performances.isLast()
-        );
+        PageInfoDto pageInfo = PageInfoDto.from(performances);
 
         // List<DTO> 형태로 변환
         List<ReadPerformanceResponseDto> data = performances.getContent()

@@ -117,13 +117,7 @@ public class HallService {
         }
 
         // PageInfo 생성
-        PageInfoDto pageInfo = new PageInfoDto(
-                halls.getNumber() + 1, // 0-base -> 1-base
-                halls.getSize(),
-                halls.getTotalElements(),
-                halls.getTotalPages(),
-                halls.isLast()
-        );
+        PageInfoDto pageInfo = PageInfoDto.from(halls);
 
         List<ReadHallResponseDto> data = halls.getContent()
                 .stream()

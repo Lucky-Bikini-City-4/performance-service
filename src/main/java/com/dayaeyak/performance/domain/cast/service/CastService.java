@@ -88,13 +88,7 @@ public class CastService {
         Page<Cast> castPage = castRepository.findByDeletedAtIsNull(pageable);
 
         // PageInfo 생성
-        PageInfoDto pageInfo = new PageInfoDto(
-                castPage.getNumber() + 1, // 0-base -> 1-base
-                castPage.getSize(),
-                castPage.getTotalElements(),
-                castPage.getTotalPages(),
-                castPage.isLast()
-        );
+        PageInfoDto pageInfo = PageInfoDto.from(castPage);
 
         List<ReadCastResponseDto> data = castPage.getContent()
                 .stream()
