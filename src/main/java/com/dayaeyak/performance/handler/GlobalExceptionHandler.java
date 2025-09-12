@@ -30,6 +30,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<Void>> handleIllegalArgumentException(IllegalArgumentException e) {
-        return ApiResponse.error(HttpStatus.BAD_REQUEST.value(), "유효하지 않은 요청입니다.");
+        String message = (e.getMessage() != null && !e.getMessage().isBlank())
+                ? e.getMessage() : "유효하지 않은 요청입니다.";
+        return ApiResponse.error(HttpStatus.BAD_REQUEST.value(), message);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIllegalStateException(IllegalStateException e) {
+        return ApiResponse.error(HttpStatus.CONFLICT.value(), e.getMessage());
     }
 }
