@@ -24,7 +24,7 @@ public record CreatePerformanceRequestDto(
         @NotNull(message = "공연장 ID는 필수 입력값입니다.")
         Long hallId,
 
-        @Schema(description = "출연진 목록", example = "아이유, 박효신, NCT 127")
+        @Schema(description = "출연진 목록", example = "아이유,박효신,NCT 127")
         @NotBlank(message = "출연진 목록은 필수 입력값입니다.")
         String castList,
 

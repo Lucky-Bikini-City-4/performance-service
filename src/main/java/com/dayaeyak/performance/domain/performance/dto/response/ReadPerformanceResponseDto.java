@@ -24,7 +24,7 @@ public record ReadPerformanceResponseDto(
         @Schema(description = "공연장 ID", example = "4")
         Long hallId,
 
-        @Schema(description = "출연진 목록", example = "아이유, 박효신, NCT 127")
+        @Schema(description = "출연진 목록", example = "아이유,박효신,NCT 127")
         List<CastDto> castList,
 
         @Schema(description = "공연 설명", example = "이거완전쩔어용")
