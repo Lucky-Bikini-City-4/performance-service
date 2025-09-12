@@ -15,7 +15,9 @@ public enum PerformanceErrorCode implements ErrorCode {
     INVALID_TICKET_TIME_RANGE(HttpStatus.BAD_REQUEST, "티켓오픈일시와 마감일시의 범위가 올바르지 않습니다."),
 
     MISMATCHED_PERFORMANCE_ID(HttpStatus.BAD_REQUEST, "공연 ID가 일치하지 않습니다."),
-    INVALID_SESSION_DATE(HttpStatus.BAD_REQUEST, "공연 회차 날짜는 공연 시작일과 마감일 사이여야 합니다.");
+    MISMATCHED_PERFORMANCE_AND_SESSION(HttpStatus.BAD_REQUEST, "선택한 회차가 해당 공연에 속하지 않습니다."),
+    INVALID_SESSION_DATE(HttpStatus.BAD_REQUEST, "공연 회차 날짜는 공연 시작일과 마감일 사이여야 합니다."),
+    SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "공연 회차 정보를 찾을 수 없습니다.");
 
 
     private final HttpStatus httpStatus;

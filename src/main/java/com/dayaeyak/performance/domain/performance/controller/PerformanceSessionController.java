@@ -1,6 +1,7 @@
 package com.dayaeyak.performance.domain.performance.controller;
 
 import com.dayaeyak.performance.domain.performance.dto.request.CreateSessionRequestDto;
+import com.dayaeyak.performance.domain.performance.dto.request.UpdateSessionRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.response.CreateSessionResponseDto;
 import com.dayaeyak.performance.domain.performance.service.PerformanceSessionService;
 import com.dayaeyak.performance.utils.ApiResponse;
@@ -27,5 +28,16 @@ public class PerformanceSessionController {
         return ApiResponse.success(HttpStatus.CREATED.value(),
                 "공연 회차가 생성되었습니다.",
                 performanceSessionService.createSession(performanceId, requestDto));
+    }
+
+    @Operation(summary = "Update Performance Session", description = "공연 회차 정보를 수정합니다.")
+    @PatchMapping("/{sessionId}")
+    public ResponseEntity<ApiResponse<CreateSessionResponseDto>> updateSession(
+            @PathVariable Long performanceId,
+            @PathVariable Long sessionId,
+            @Validated @RequestBody UpdateSessionRequestDto requestDto){
+        return ApiResponse.success(HttpStatus.OK.value(),
+                "공연 회차 정보를 수정했습니다.",
+                performanceSessionService.updateSession(performanceId, sessionId, requestDto));
     }
 }
