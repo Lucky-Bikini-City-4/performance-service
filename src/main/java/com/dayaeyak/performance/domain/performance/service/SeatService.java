@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 
 @Slf4j
@@ -85,7 +86,43 @@ public class SeatService {
     }
 
     /* 공연 회차 구역 좌석 조회 */
+    public SeatResponseDto readPerformanceSeat(Long performanceId, Long sessionId, Long sectionId, Long seatId){
+        PerformanceSeat seat = performanceSeatRepository.findByPerformanceSeatIdAndDeletedAtIsNull(seatId)
+                .orElseThrow(() -> new CustomException(PerformanceErrorCode.SEAT_NOT_FOUND));
 
-    /* 공연 회차 구역 좌석 전체 조회 */
+        if (!Objects.equals(seat.getPerformanceSection().getPerformanceSectionId(), sectionId)) {
+            throw new CustomException(PerformanceErrorCode.MISMATCHED_SECTION_AND_SEAT);
+        }
+
+        if (!Objects.equals(seat.getPerformanceSection().getPerformanceSession().getPerformanceSessionId(), sessionId)) {
+            throw new CustomException(PerformanceErrorCode.MISMATCHED_SESSION_AND_SECTION);
+        }
+
+        if (!Objects.equals(seat.getPerformanceSection().getPerformanceSession().getPerformance().getPerformanceId(), performanceId)) {
+            throw new CustomException(PerformanceErrorCode.MISMATCHED_PERFORMANCE_AND_SESSION);
+        }
+
+        return SeatResponseDto.from(seat);
+    }
+
+    /* 한 구역의 좌석 전체 조회 (순서대로 좌석의 품절 여부만 응답) */
+    public List<Boolean> readPerformanceSeats(Long performanceId, Long sessionId, Long sectionId){
+        // 요청 구역 조회
+        PerformanceSection section = performanceSectionRepository.findByPerformanceSectionIdAndDeletedAtIsNull(sectionId)
+                .orElseThrow(() -> new CustomException(PerformanceErrorCode.SECTION_NOT_FOUND));
+
+        // 회차 구역이 요청한 공연 회차에 속하는지 검증
+        if (!Objects.equals(section.getPerformanceSession().getPerformanceSessionId(), sessionId)) {
+            throw new CustomException(PerformanceErrorCode.MISMATCHED_SESSION_AND_SECTION);
+        }
+
+        // 공연 회차가 요청한 공연에 속하는지 검증
+        if (!Objects.equals(section.getPerformanceSession().getPerformance().getPerformanceId(), performanceId)) {
+            throw new CustomException(PerformanceErrorCode.MISMATCHED_PERFORMANCE_AND_SESSION);
+        }
+
+        // 해당 구역 전체 좌석의 품절여부만 조회
+        return performanceSeatRepository.findIsSoldOutBySectionIdNative(sectionId);
+    }
 
 }
