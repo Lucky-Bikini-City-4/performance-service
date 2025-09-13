@@ -7,6 +7,7 @@ import com.dayaeyak.performance.domain.cast.entity.Cast;
 import com.dayaeyak.performance.domain.cast.exception.CastErrorCode;
 import com.dayaeyak.performance.domain.cast.repository.CastRepository;
 import com.dayaeyak.performance.domain.hall.entity.Hall;
+import com.dayaeyak.performance.domain.hall.enums.Region;
 import com.dayaeyak.performance.domain.hall.exception.HallErrorCode;
 import com.dayaeyak.performance.domain.hall.repository.HallRepository;
 import com.dayaeyak.performance.domain.performance.dto.request.ChangePerformanceRequestDto;
@@ -223,7 +224,7 @@ public class PerformanceService {
     }
 
     /* 공연 페이징 조회 */
-    public ReadPerformancePageResponseDto readPerformanceList(int page, int size, Type type) {
+    public ReadPerformancePageResponseDto readPerformanceList(int page, int size, Type type, Region region) {
         if(page < 0 || size < 0){
             throw new CustomException(GlobalErrorCode.INVALID_PAGE_OR_SIZE);
         }
@@ -231,11 +232,18 @@ public class PerformanceService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "startDate"));
         Page<Performance> performances;
 
-        // 공연 타입별 검색, 타입이 없을 경우 전체 타입에서 검색
-        if (type == null) {
+        if (type == null && region == null) {
+            // 타입도 없고 지역도 없으면 전체 조회
             performances = performanceRepository.findByDeletedAtIsNullAndIsActivatedIsTrue(pageable);
-        } else {
+        } else if (type != null && region == null) {
+            // 타입만 있는 경우
             performances = performanceRepository.findByDeletedAtIsNullAndTypeAndIsActivatedIsTrue(pageable, type);
+        } else if (type == null) {
+            // 지역만 있는 경우
+            performances = performanceRepository.findByDeletedAtIsNullAndIsActivatedIsTrueAndHall_Region(pageable, region);
+        } else {
+            // 타입과 지역 둘 다 있는 경우
+            performances = performanceRepository.findByDeletedAtIsNullAndTypeAndIsActivatedIsTrueAndHall_Region(pageable, type, region);
         }
 
         // PageInfo 생성
