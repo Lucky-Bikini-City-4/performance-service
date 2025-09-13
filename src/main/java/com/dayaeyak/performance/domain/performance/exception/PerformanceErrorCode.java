@@ -23,7 +23,17 @@ public enum PerformanceErrorCode implements ErrorCode {
     INVALID_SEAT_PRICE(HttpStatus.BAD_REQUEST, "좌석 가격은 0보다 커야 합니다."),
 
     SECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "공연 회차 구역 정보를 찾을 수 없습니다."),
-    MISMATCHED_SESSION_AND_SECTION(HttpStatus.BAD_REQUEST, "선택한 공연 회차 구역이 해당 공연 회차에 속하지 않습니다.");
+    MISMATCHED_SESSION_AND_SECTION(HttpStatus.BAD_REQUEST, "선택한 공연 회차 구역이 해당 공연 회차에 속하지 않습니다."),
+    SEAT_NOT_FOUND(HttpStatus.NOT_FOUND, "좌석 정보를 확인할 수 없습니다."),
+    MISMATCHED_SECTION_AND_SEAT(HttpStatus.BAD_REQUEST, "선택한 좌석이 해당 공연 회차 구역에 속하지 않습니다."),
+
+    SEAT_ALREADY_SOLD_OUT(HttpStatus.CONFLICT, "해당 좌석은 이미 품절되었습니다."),
+    SEAT_ALREADY_OPEN(HttpStatus.CONFLICT, "해당 좌석은 이미 품절되지 않은 상태입니다."),
+
+    // 분산락
+    LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "현재 다른 요청 처리 중입니다. 잠시 후 다시 시도해주세요."),
+    LOCK_INTERRUPTED(HttpStatus.INTERNAL_SERVER_ERROR, "처리 중 오류가 발생했습니다. 다시 시도해주세요."),
+    CONCURRENT_SEAT_MODIFICATION(HttpStatus.CONFLICT, "다른 요청과 충돌했습니다. 잠시 후 다시 시도해주세요.");
 
 
     private final HttpStatus httpStatus;

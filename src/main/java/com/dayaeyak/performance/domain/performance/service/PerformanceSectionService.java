@@ -5,7 +5,6 @@ import com.dayaeyak.performance.domain.performance.dto.response.ReadPerformanceS
 import com.dayaeyak.performance.domain.performance.entity.PerformanceSection;
 import com.dayaeyak.performance.domain.performance.entity.PerformanceSession;
 import com.dayaeyak.performance.domain.performance.exception.PerformanceErrorCode;
-import com.dayaeyak.performance.domain.performance.repository.PerformanceSeatRepository;
 import com.dayaeyak.performance.domain.performance.repository.PerformanceSectionRepository;
 import com.dayaeyak.performance.domain.performance.repository.PerformanceSessionRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,6 @@ import java.util.Objects;
 public class PerformanceSectionService {
     private final PerformanceSectionRepository performanceSectionRepository;
     private final PerformanceSessionRepository performanceSessionRepository;
-    private final PerformanceSeatRepository performanceSeatRepository;
 
     /* 공연 회차 구역 조회 */
     public ReadPerformanceSectionResponseDto readPerformanceSection(Long performanceId, Long sessionId, Long sectionId){
