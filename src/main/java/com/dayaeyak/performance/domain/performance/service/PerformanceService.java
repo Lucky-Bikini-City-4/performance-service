@@ -16,9 +16,15 @@ import com.dayaeyak.performance.domain.performance.dto.response.CreatePerformanc
 import com.dayaeyak.performance.domain.performance.dto.response.ReadPerformancePageResponseDto;
 import com.dayaeyak.performance.domain.performance.dto.response.ReadPerformanceResponseDto;
 import com.dayaeyak.performance.domain.performance.entity.Performance;
+import com.dayaeyak.performance.domain.performance.entity.PerformanceSeat;
+import com.dayaeyak.performance.domain.performance.entity.PerformanceSection;
+import com.dayaeyak.performance.domain.performance.entity.PerformanceSession;
 import com.dayaeyak.performance.domain.performance.enums.Type;
 import com.dayaeyak.performance.domain.performance.exception.PerformanceErrorCode;
 import com.dayaeyak.performance.domain.performance.repository.PerformanceRepository;
+import com.dayaeyak.performance.domain.performance.repository.PerformanceSeatRepository;
+import com.dayaeyak.performance.domain.performance.repository.PerformanceSectionRepository;
+import com.dayaeyak.performance.domain.performance.repository.PerformanceSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,6 +45,9 @@ public class PerformanceService {
     private final PerformanceRepository performanceRepository;
     private final HallRepository hallRepository;
     private final CastRepository castRepository;
+    private final PerformanceSessionRepository performanceSessionRepository;
+    private final PerformanceSectionRepository performanceSectionRepository;
+    private final PerformanceSeatRepository performanceSeatRepository;
 
     /* 공연 생성 */
     @Transactional
@@ -254,6 +263,19 @@ public class PerformanceService {
 
         // 공연 삭제
         performance.delete();
+        // 공연 회차 삭제
+        List<PerformanceSession> sessions = performanceSessionRepository.findByPerformanceAndDeletedAtIsNull(performance);
+        sessions.forEach(PerformanceSession::delete);
+        // 회차 구역 삭제
+        for(PerformanceSession session: sessions){
+            List<PerformanceSection> sections = performanceSectionRepository.findByPerformanceSessionAndDeletedAtIsNull(session);
+            sections.forEach(PerformanceSection::delete);
+            // 회차 구역 좌석 삭제
+            for(PerformanceSection section: sections){
+                List<PerformanceSeat> seats = performanceSeatRepository.findByPerformanceSectionAndDeletedAtIsNull(section);
+                seats.forEach(PerformanceSeat::delete);
+            }
+        }
         return null;
     }
 }

@@ -20,7 +20,10 @@ public enum PerformanceErrorCode implements ErrorCode {
     SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "공연 회차 정보를 찾을 수 없습니다."),
     INVALID_SECTION_NAMES(HttpStatus.BAD_REQUEST, "공연장에 없는 구역이 요청 본문에 포함되어 있습니다."),
     MISSING_SECTION_PRICES(HttpStatus.BAD_REQUEST, "가격 정보가 누락된 구역이 있습니다."),
-    INVALID_SEAT_PRICE(HttpStatus.BAD_REQUEST, "좌석 가격은 0보다 커야 합니다.");
+    INVALID_SEAT_PRICE(HttpStatus.BAD_REQUEST, "좌석 가격은 0보다 커야 합니다."),
+
+    SECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "공연 회차 구역 정보를 찾을 수 없습니다."),
+    MISMATCHED_SESSION_AND_SECTION(HttpStatus.BAD_REQUEST, "선택한 공연 회차 구역이 해당 공연 회차에 속하지 않습니다.");
 
 
     private final HttpStatus httpStatus;
