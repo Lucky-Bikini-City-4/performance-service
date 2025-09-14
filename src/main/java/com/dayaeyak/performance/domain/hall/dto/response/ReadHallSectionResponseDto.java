@@ -13,9 +13,6 @@ public record ReadHallSectionResponseDto(
         String sectionName,
 
         @Schema(description = "구역의 좌석수", example = "300")
-        Integer seats,
-
-        @Schema(description = "좌석당 가격", example = "156000")
-        Integer seatPrice
+        Integer seats
 ) {
 }

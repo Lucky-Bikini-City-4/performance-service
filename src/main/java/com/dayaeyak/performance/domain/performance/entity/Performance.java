@@ -6,12 +6,15 @@ import com.dayaeyak.performance.domain.hall.entity.Hall;
 import com.dayaeyak.performance.domain.performance.enums.Grade;
 import com.dayaeyak.performance.domain.performance.enums.Type;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -45,11 +48,11 @@ public class Performance extends BaseEntity {
 
     @Column(nullable = false)
     @Temporal(TemporalType.DATE)
-    private Date startDate;
+    private LocalDate startDate;
 
     @Column(nullable = false)
     @Temporal(TemporalType.DATE)
-    private Date endDate;
+    private LocalDate endDate;
 
     @Column(nullable = false)
     private Timestamp ticketOpenAt;
@@ -81,7 +84,7 @@ public class Performance extends BaseEntity {
 
     @Builder
     public Performance(Long sellerId, Hall hall, String performanceName, String description, Type type, Grade grade,
-                       Date startDate, Date endDate, Timestamp ticketOpenAt, Timestamp ticketCloseAt, Boolean isActivated) {
+                       LocalDate startDate, LocalDate endDate, Timestamp ticketOpenAt, Timestamp ticketCloseAt, Boolean isActivated) {
         this.sellerId = sellerId;
         this.hall = hall;
         this.performanceName = performanceName;
@@ -115,11 +118,11 @@ public class Performance extends BaseEntity {
         this.grade = grade;
     }
 
-    public void updateStartDate(Date startDate) {
+    public void updateStartDate(LocalDate startDate) {
         this.startDate = startDate;
     }
 
-    public void updateEndDate(Date endDate) {
+    public void updateEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
 

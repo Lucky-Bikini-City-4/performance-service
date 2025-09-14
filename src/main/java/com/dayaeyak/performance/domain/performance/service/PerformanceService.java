@@ -7,6 +7,7 @@ import com.dayaeyak.performance.domain.cast.entity.Cast;
 import com.dayaeyak.performance.domain.cast.exception.CastErrorCode;
 import com.dayaeyak.performance.domain.cast.repository.CastRepository;
 import com.dayaeyak.performance.domain.hall.entity.Hall;
+import com.dayaeyak.performance.domain.hall.enums.Region;
 import com.dayaeyak.performance.domain.hall.exception.HallErrorCode;
 import com.dayaeyak.performance.domain.hall.repository.HallRepository;
 import com.dayaeyak.performance.domain.performance.dto.request.ChangePerformanceRequestDto;
@@ -16,9 +17,15 @@ import com.dayaeyak.performance.domain.performance.dto.response.CreatePerformanc
 import com.dayaeyak.performance.domain.performance.dto.response.ReadPerformancePageResponseDto;
 import com.dayaeyak.performance.domain.performance.dto.response.ReadPerformanceResponseDto;
 import com.dayaeyak.performance.domain.performance.entity.Performance;
+import com.dayaeyak.performance.domain.performance.entity.PerformanceSeat;
+import com.dayaeyak.performance.domain.performance.entity.PerformanceSection;
+import com.dayaeyak.performance.domain.performance.entity.PerformanceSession;
 import com.dayaeyak.performance.domain.performance.enums.Type;
 import com.dayaeyak.performance.domain.performance.exception.PerformanceErrorCode;
 import com.dayaeyak.performance.domain.performance.repository.PerformanceRepository;
+import com.dayaeyak.performance.domain.performance.repository.PerformanceSeatRepository;
+import com.dayaeyak.performance.domain.performance.repository.PerformanceSectionRepository;
+import com.dayaeyak.performance.domain.performance.repository.PerformanceSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,8 +34,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,6 +46,9 @@ public class PerformanceService {
     private final PerformanceRepository performanceRepository;
     private final HallRepository hallRepository;
     private final CastRepository castRepository;
+    private final PerformanceSessionRepository performanceSessionRepository;
+    private final PerformanceSectionRepository performanceSectionRepository;
+    private final PerformanceSeatRepository performanceSeatRepository;
 
     /* 공연 생성 */
     @Transactional
@@ -64,8 +74,8 @@ public class PerformanceService {
                 .description(requestDto.description())
                 .type(requestDto.type())
                 .grade(requestDto.grade())
-                .startDate(java.sql.Date.valueOf(requestDto.startDate()))
-                .endDate(java.sql.Date.valueOf(requestDto.endDate()))
+                .startDate(requestDto.startDate())
+                .endDate(requestDto.endDate())
                 .ticketOpenAt(Timestamp.valueOf(requestDto.ticketOpenAt()))
                 .ticketCloseAt(Timestamp.valueOf(requestDto.ticketCloseAt()))
                 .isActivated(requestDto.isActivated() == null || requestDto.isActivated())
@@ -144,20 +154,20 @@ public class PerformanceService {
 
         // 시작일/마감일 수정
         if (requestDto.startDate() != null) {
-            Date startDate = java.sql.Date.valueOf(requestDto.startDate());
+            LocalDate startDate = requestDto.startDate();
 
             // 종료일이 이미 설정되어 있다면 시작일이 종료일보다 이후가 되지 않도록 검증
-            if (performance.getEndDate() != null && startDate.after(performance.getEndDate())) {
+            if (performance.getEndDate() != null && startDate.isAfter(performance.getEndDate())) {
                 throw new CustomException(PerformanceErrorCode.INVALID_DATE_RANGE);
             }
 
             performance.updateStartDate(startDate);
         }
         if (requestDto.endDate() != null) {
-            Date endDate = java.sql.Date.valueOf(requestDto.endDate());
+            LocalDate endDate = requestDto.endDate();
 
             // 시작일이 이미 설정되어 있다면 종료일이 시작일보다 이전이 되지 않도록 검증
-            if (performance.getStartDate() != null && endDate.before(performance.getStartDate())) {
+            if (performance.getStartDate() != null && endDate.isBefore(performance.getStartDate())) {
                 throw new CustomException(PerformanceErrorCode.INVALID_DATE_RANGE);
             }
 
@@ -214,7 +224,7 @@ public class PerformanceService {
     }
 
     /* 공연 페이징 조회 */
-    public ReadPerformancePageResponseDto readPerformanceList(int page, int size, Type type) {
+    public ReadPerformancePageResponseDto readPerformanceList(int page, int size, Type type, Region region) {
         if(page < 0 || size < 0){
             throw new CustomException(GlobalErrorCode.INVALID_PAGE_OR_SIZE);
         }
@@ -222,11 +232,18 @@ public class PerformanceService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "startDate"));
         Page<Performance> performances;
 
-        // 공연 타입별 검색, 타입이 없을 경우 전체 타입에서 검색
-        if (type == null) {
+        if (type == null && region == null) {
+            // 타입도 없고 지역도 없으면 전체 조회
             performances = performanceRepository.findByDeletedAtIsNullAndIsActivatedIsTrue(pageable);
-        } else {
+        } else if (type != null && region == null) {
+            // 타입만 있는 경우
             performances = performanceRepository.findByDeletedAtIsNullAndTypeAndIsActivatedIsTrue(pageable, type);
+        } else if (type == null) {
+            // 지역만 있는 경우
+            performances = performanceRepository.findByDeletedAtIsNullAndIsActivatedIsTrueAndHall_Region(pageable, region);
+        } else {
+            // 타입과 지역 둘 다 있는 경우
+            performances = performanceRepository.findByDeletedAtIsNullAndTypeAndIsActivatedIsTrueAndHall_Region(pageable, type, region);
         }
 
         // PageInfo 생성
@@ -254,6 +271,19 @@ public class PerformanceService {
 
         // 공연 삭제
         performance.delete();
+        // 공연 회차 삭제
+        List<PerformanceSession> sessions = performanceSessionRepository.findByPerformanceAndDeletedAtIsNull(performance);
+        sessions.forEach(PerformanceSession::delete);
+        // 회차 구역 삭제
+        for(PerformanceSession session: sessions){
+            List<PerformanceSection> sections = performanceSectionRepository.findByPerformanceSessionAndDeletedAtIsNull(session);
+            sections.forEach(PerformanceSection::delete);
+            // 회차 구역 좌석 삭제
+            for(PerformanceSection section: sections){
+                List<PerformanceSeat> seats = performanceSeatRepository.findByPerformanceSectionAndDeletedAtIsNull(section);
+                seats.forEach(PerformanceSeat::delete);
+            }
+        }
         return null;
     }
 }
