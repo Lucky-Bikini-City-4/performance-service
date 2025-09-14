@@ -153,6 +153,7 @@ public class HallService {
                         .hall(hall)
                         .sectionName(sectionDto.sectionName())
                         .seats(sectionDto.seats())
+                        .seatPrice(sectionDto.seatPrice())
                         .build())
                 .toList();
     }

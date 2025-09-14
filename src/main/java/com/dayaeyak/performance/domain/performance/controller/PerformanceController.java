@@ -1,6 +1,5 @@
 package com.dayaeyak.performance.domain.performance.controller;
 
-import com.dayaeyak.performance.domain.hall.enums.Region;
 import com.dayaeyak.performance.domain.performance.dto.request.ChangePerformanceRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.request.CreatePerformanceRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.request.UpdatePerformanceRequestDto;
@@ -67,11 +66,10 @@ public class PerformanceController {
     public ResponseEntity<ApiResponse<ReadPerformancePageResponseDto>> readPerformanceList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) Type type,
-            @RequestParam(required = false) Region region) {
+            @RequestParam(required = false) Type type) {
         return ApiResponse.success(HttpStatus.OK.value(),
                 "공연 목록을 조회합니다.",
-                performanceService.readPerformanceList(page, size, type, region));
+                performanceService.readPerformanceList(page, size, type));
     }
 
     @Operation(summary = "Delete Performance", description = "공연을 삭제합니다.")

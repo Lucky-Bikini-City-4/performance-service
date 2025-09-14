@@ -41,7 +41,7 @@ public class HallSectionService {
         }
 
         // 구역 정보 수정
-        hallSection.update(requestDto.sectionName(), requestDto.seats());
+        hallSection.update(requestDto.sectionName(), requestDto.seats(), requestDto.seatPrice());
 
         return new UpdateHallSectionResponseDto(hallSectionId);
     }
@@ -58,7 +58,7 @@ public class HallSectionService {
         }
 
         return new ReadHallSectionResponseDto(hallId, hallSectionId,
-                hallSection.getSectionName(), hallSection.getSeats());
+                hallSection.getSectionName(), hallSection.getSeats(), hallSection.getSeatPrice());
     }
 
     /* 공연장 구역 전체 조회 */
@@ -76,7 +76,8 @@ public class HallSectionService {
                         section.getHall().getHallId(),
                         section.getHallSectionId(),
                         section.getSectionName(),
-                        section.getSeats()
+                        section.getSeats(),
+                        section.getSeatPrice()
                 ))
                 .toList();
     }

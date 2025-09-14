@@ -12,29 +12,7 @@ public enum PerformanceErrorCode implements ErrorCode {
     CANNOT_CHANGE_ACTIVATION(HttpStatus.BAD_REQUEST, "지금은 공연의 활성화 상태를 변경할 수 없습니다."),
     PERFORMANCE_NOT_FOUND(HttpStatus.BAD_REQUEST, "공연 정보를 찾을 수 없습니다."),
     INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "공연 시작일과 종료일의 범위가 올바르지 않습니다."),
-    INVALID_TICKET_TIME_RANGE(HttpStatus.BAD_REQUEST, "티켓오픈일시와 마감일시의 범위가 올바르지 않습니다."),
-
-    MISMATCHED_PERFORMANCE_ID(HttpStatus.BAD_REQUEST, "공연 ID가 일치하지 않습니다."),
-    MISMATCHED_PERFORMANCE_AND_SESSION(HttpStatus.BAD_REQUEST, "선택한 회차가 해당 공연에 속하지 않습니다."),
-    INVALID_SESSION_DATE(HttpStatus.BAD_REQUEST, "공연 회차 날짜는 공연 시작일과 마감일 사이여야 합니다."),
-    SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "공연 회차 정보를 찾을 수 없습니다."),
-    INVALID_SECTION_NAMES(HttpStatus.BAD_REQUEST, "공연장에 없는 구역이 요청 본문에 포함되어 있습니다."),
-    MISSING_SECTION_PRICES(HttpStatus.BAD_REQUEST, "가격 정보가 누락된 구역이 있습니다."),
-    INVALID_SEAT_PRICE(HttpStatus.BAD_REQUEST, "좌석 가격은 0보다 커야 합니다."),
-
-    SECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "공연 회차 구역 정보를 찾을 수 없습니다."),
-    MISMATCHED_SESSION_AND_SECTION(HttpStatus.BAD_REQUEST, "선택한 공연 회차 구역이 해당 공연 회차에 속하지 않습니다."),
-    SEAT_NOT_FOUND(HttpStatus.NOT_FOUND, "좌석 정보를 확인할 수 없습니다."),
-    MISMATCHED_SECTION_AND_SEAT(HttpStatus.BAD_REQUEST, "선택한 좌석이 해당 공연 회차 구역에 속하지 않습니다."),
-
-    SEAT_ALREADY_SOLD_OUT(HttpStatus.CONFLICT, "해당 좌석은 이미 품절되었습니다."),
-    SEAT_ALREADY_OPEN(HttpStatus.CONFLICT, "해당 좌석은 이미 품절되지 않은 상태입니다."),
-
-    // 분산락
-    LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "현재 다른 요청 처리 중입니다. 잠시 후 다시 시도해주세요."),
-    LOCK_INTERRUPTED(HttpStatus.INTERNAL_SERVER_ERROR, "처리 중 오류가 발생했습니다. 다시 시도해주세요."),
-    CONCURRENT_SEAT_MODIFICATION(HttpStatus.CONFLICT, "다른 요청과 충돌했습니다. 잠시 후 다시 시도해주세요.");
-
+    INVALID_TICKET_TIME_RANGE(HttpStatus.BAD_REQUEST, "티켓오픈일시와 마감일시의 범위가 올바르지 않습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

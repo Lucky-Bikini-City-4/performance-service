@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 import java.sql.Timestamp;
-import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 @Builder
@@ -37,10 +37,10 @@ public record ReadPerformanceResponseDto(
         Grade grade,
 
         @Schema(description = "공연 시작일", example = "2025-10-01")
-        LocalDate startDate,
+        Date startDate,
 
         @Schema(description = "공연 종료일", example = "2025-10-31")
-        LocalDate endDate,
+        Date endDate,
 
         @Schema(description = "티켓 오픈 일시", example = "2025-09-01T09:00:00")
         Timestamp ticketOpenAt,

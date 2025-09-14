@@ -1,7 +1,6 @@
 package com.dayaeyak.performance.domain.performance.repository;
 
 import com.dayaeyak.performance.domain.hall.entity.Hall;
-import com.dayaeyak.performance.domain.hall.enums.Region;
 import com.dayaeyak.performance.domain.performance.entity.Performance;
 import com.dayaeyak.performance.domain.performance.enums.Type;
 import org.springframework.data.domain.Page;
@@ -18,7 +17,4 @@ public interface PerformanceRepository extends JpaRepository<Performance,Long> {
     Page<Performance> findByDeletedAtIsNullAndTypeAndIsActivatedIsTrue(Pageable pageable, Type type);
     boolean existsByHallAndDeletedAtIsNull(Hall hall);
     Boolean existsByHallAndEndDateGreaterThanEqualAndDeletedAtIsNull(Hall hall, LocalDate now);
-    Page<Performance> findByDeletedAtIsNullAndIsActivatedIsTrueAndHall_Region(Pageable pageable, Region region);
-    Page<Performance> findByDeletedAtIsNullAndTypeAndIsActivatedIsTrueAndHall_Region(Pageable pageable, Type type, Region region);
-
 }
