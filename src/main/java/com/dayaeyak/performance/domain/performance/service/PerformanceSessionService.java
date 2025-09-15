@@ -16,6 +16,7 @@ import com.dayaeyak.performance.domain.performance.repository.PerformanceReposit
 import com.dayaeyak.performance.domain.performance.repository.PerformanceSeatRepository;
 import com.dayaeyak.performance.domain.performance.repository.PerformanceSectionRepository;
 import com.dayaeyak.performance.domain.performance.repository.PerformanceSessionRepository;
+import com.dayaeyak.performance.utils.RoleValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +39,9 @@ public class PerformanceSessionService {
 
     /* 공연 회차 생성 */
     @Transactional
-    public CreateSessionResponseDto createSession(Long performanceId, CreateSessionRequestDto requestDto){
+    public CreateSessionResponseDto createSession(String roles, Long performanceId, CreateSessionRequestDto requestDto){
+        RoleValidator.validateMasterOrSeller(roles);
+
         // 경로 변수의 공연 ID와 요청 DTO의 공연 ID가 일치하지 않을 시 예외
         if(!Objects.equals(performanceId, requestDto.performanceId())){
             throw new CustomException(PerformanceErrorCode.MISMATCHED_PERFORMANCE_ID);
@@ -116,7 +119,9 @@ public class PerformanceSessionService {
 
     /* 공연 회차 수정 */
     @Transactional
-    public CreateSessionResponseDto updateSession(Long performanceId, Long sessionId, UpdateSessionRequestDto requestDto){
+    public CreateSessionResponseDto updateSession(String roles, Long performanceId, Long sessionId, UpdateSessionRequestDto requestDto){
+        RoleValidator.validateMasterOrSeller(roles);
+
         // 공연 회차 조회
         PerformanceSession session = findSessionById(sessionId);
 
@@ -175,7 +180,9 @@ public class PerformanceSessionService {
 
     /* 공연 회차 삭제 */
     @Transactional
-    public Void deleteSession(Long performanceId, Long sessionId){
+    public Void deleteSession(String roles, Long performanceId, Long sessionId){
+        RoleValidator.validateMasterOrSeller(roles);
+
         // 공연 회차 조회
         PerformanceSession session = findSessionById(sessionId);
 

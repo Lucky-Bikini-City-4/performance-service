@@ -22,8 +22,9 @@ public class SeatController {
     private final SeatService seatService;
 
     @Operation(summary = "Change IsSoldOut", description = "좌석의 품절 여부를 변경합니다.")
-    @PatchMapping("/{seatId}")
+    @PostMapping("/{seatId}")
     public ResponseEntity<ApiResponse<SeatResponseDto>> changeIsSoldOut(
+            @RequestHeader("X-User-Role") String roles,
             @PathVariable Long performanceId,
             @PathVariable Long sessionId,
             @PathVariable Long sectionId,
@@ -31,7 +32,7 @@ public class SeatController {
             @RequestBody UpdateSeatSoldOutRequestDto requestDto) {
         return ApiResponse.success(HttpStatus.OK.value(),
                 "해당 좌석의 품절 여부를 변경했습니다.",
-                seatService.changeIsSoldOut(performanceId, sessionId, sectionId, seatId, requestDto));
+                seatService.changeIsSoldOut(roles, performanceId, sessionId, sectionId, seatId, requestDto));
     }
 
     @Operation(summary = "Read Performance Seat", description = "해당 좌석의 상세 정보를 조회합니다.")

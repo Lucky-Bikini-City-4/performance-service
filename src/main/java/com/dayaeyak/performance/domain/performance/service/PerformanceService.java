@@ -26,6 +26,7 @@ import com.dayaeyak.performance.domain.performance.repository.PerformanceReposit
 import com.dayaeyak.performance.domain.performance.repository.PerformanceSeatRepository;
 import com.dayaeyak.performance.domain.performance.repository.PerformanceSectionRepository;
 import com.dayaeyak.performance.domain.performance.repository.PerformanceSessionRepository;
+import com.dayaeyak.performance.utils.RoleValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -61,7 +62,9 @@ public class PerformanceService {
             @CacheEvict(value = "performances", allEntries = true),
             @CacheEvict(value = "performance", allEntries = true)  // 새로 추가
     })
-    public CreatePerformanceResponseDto createPerformance(CreatePerformanceRequestDto requestDto){
+    public CreatePerformanceResponseDto createPerformance(String roles, CreatePerformanceRequestDto requestDto){
+        RoleValidator.validateMaster(roles);
+
         // 공연장 ID로 공연장 객체 찾기
         Hall hall = hallRepository.findByHallIdAndDeletedAtIsNull(requestDto.hallId())
                 .orElseThrow(() -> new CustomException(HallErrorCode.HALL_NOT_FOUND));
@@ -102,7 +105,9 @@ public class PerformanceService {
             @CacheEvict(value = "performances", allEntries = true),
             @CacheEvict(value = "performance", key = "'performance:' + #performanceId")  // 해당 공연만 삭제
     })
-    public CreatePerformanceResponseDto updatePerformance(Long performanceId, UpdatePerformanceRequestDto requestDto){
+    public CreatePerformanceResponseDto updatePerformance(String roles, Long performanceId, UpdatePerformanceRequestDto requestDto){
+        RoleValidator.validateMasterOrSeller(roles);
+
         Performance performance = performanceRepository.findByPerformanceIdAndDeletedAtIsNull(performanceId)
                 .orElseThrow(() -> new CustomException(PerformanceErrorCode.PERFORMANCE_NOT_FOUND));
 
@@ -218,7 +223,9 @@ public class PerformanceService {
             @CacheEvict(value = "performances", allEntries = true),
             @CacheEvict(value = "performance", key = "'performance:' + #performanceId")
     })
-    public Boolean changeIsActivated(Long performanceId, ChangePerformanceRequestDto requestDto) {
+    public Boolean changeIsActivated(String roles, Long performanceId, ChangePerformanceRequestDto requestDto) {
+        RoleValidator.validateMasterOrSeller(roles);
+
         Performance performance = performanceRepository.findByPerformanceIdAndDeletedAtIsNull(performanceId)
                 .orElseThrow(() -> new CustomException(PerformanceErrorCode.PERFORMANCE_NOT_FOUND));
 
@@ -295,7 +302,9 @@ public class PerformanceService {
             @CacheEvict(value = "performances", allEntries = true),
             @CacheEvict(value = "performance", key = "'performance:' + #performanceId")
     })
-    public Void deletePerformance(Long performanceId) {
+    public Void deletePerformance(String roles, Long performanceId) {
+        RoleValidator.validateMaster(roles);
+
         Performance performance = performanceRepository.findByPerformanceIdAndDeletedAtIsNull(performanceId)
                 .orElseThrow(() -> new CustomException(PerformanceErrorCode.PERFORMANCE_NOT_FOUND));
 
