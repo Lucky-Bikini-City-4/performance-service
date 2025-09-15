@@ -27,6 +27,10 @@ import com.dayaeyak.performance.domain.performance.repository.PerformanceSeatRep
 import com.dayaeyak.performance.domain.performance.repository.PerformanceSectionRepository;
 import com.dayaeyak.performance.domain.performance.repository.PerformanceSessionRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +43,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -52,6 +57,10 @@ public class PerformanceService {
 
     /* 공연 생성 */
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "performances", allEntries = true),
+            @CacheEvict(value = "performance", allEntries = true)  // 새로 추가
+    })
     public CreatePerformanceResponseDto createPerformance(CreatePerformanceRequestDto requestDto){
         // 공연장 ID로 공연장 객체 찾기
         Hall hall = hallRepository.findByHallIdAndDeletedAtIsNull(requestDto.hallId())
@@ -89,6 +98,10 @@ public class PerformanceService {
 
     /* 공연 수정 (요청 DTO의 필드를 하나씩 확인해서 들어온 값만 수정) */
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "performances", allEntries = true),
+            @CacheEvict(value = "performance", key = "'performance:' + #performanceId")  // 해당 공연만 삭제
+    })
     public CreatePerformanceResponseDto updatePerformance(Long performanceId, UpdatePerformanceRequestDto requestDto){
         Performance performance = performanceRepository.findByPerformanceIdAndDeletedAtIsNull(performanceId)
                 .orElseThrow(() -> new CustomException(PerformanceErrorCode.PERFORMANCE_NOT_FOUND));
@@ -201,6 +214,10 @@ public class PerformanceService {
 
     /* 공연 활성화 상태 변경 */
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "performances", allEntries = true),
+            @CacheEvict(value = "performance", key = "'performance:' + #performanceId")
+    })
     public Boolean changeIsActivated(Long performanceId, ChangePerformanceRequestDto requestDto) {
         Performance performance = performanceRepository.findByPerformanceIdAndDeletedAtIsNull(performanceId)
                 .orElseThrow(() -> new CustomException(PerformanceErrorCode.PERFORMANCE_NOT_FOUND));
@@ -216,7 +233,14 @@ public class PerformanceService {
     }
 
     /* 공연 단건 조회 */
+    @Cacheable(
+            value = "performance",
+            key = "'performance:' + #performanceId",
+            unless = "#result == null"
+    )
     public ReadPerformanceResponseDto readPerformance(Long performanceId) {
+        log.info("DB 에서 불러오는 중... 캐싱 적용 안됨...");
+
         Performance performance = performanceRepository.findByPerformanceIdAndDeletedAtIsNullAndIsActivatedIsTrue(performanceId)
                 .orElseThrow(() -> new CustomException(PerformanceErrorCode.PERFORMANCE_NOT_FOUND));
 
@@ -224,7 +248,14 @@ public class PerformanceService {
     }
 
     /* 공연 페이징 조회 */
+    @Cacheable(
+            value = "performances",
+            key = "'performances:page:' + #page + ':size:' + #size + ':type:' + #type + ':region:' + #region",
+            unless = "#result == null || #result.performances().isEmpty()"
+    )
     public ReadPerformancePageResponseDto readPerformanceList(int page, int size, Type type, Region region) {
+        log.info("DB 에서 불러오는 중... 캐싱 적용 안됨...");
+
         if(page < 0 || size < 0){
             throw new CustomException(GlobalErrorCode.INVALID_PAGE_OR_SIZE);
         }
@@ -260,6 +291,10 @@ public class PerformanceService {
 
     /* 공연 삭제 */
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "performances", allEntries = true),
+            @CacheEvict(value = "performance", key = "'performance:' + #performanceId")
+    })
     public Void deletePerformance(Long performanceId) {
         Performance performance = performanceRepository.findByPerformanceIdAndDeletedAtIsNull(performanceId)
                 .orElseThrow(() -> new CustomException(PerformanceErrorCode.PERFORMANCE_NOT_FOUND));
