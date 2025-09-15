@@ -26,20 +26,22 @@ public class HallController {
     @Operation(summary = "Create Hall", description = "공연장, 구역 정보를 받아 새로운 공연장을 생성합니다.")
     @PostMapping
     public ResponseEntity<ApiResponse<CreateHallResponseDto>> createHall(
+            @RequestHeader("X-User-Role") String roles,
             @Validated @RequestBody CreateHallRequestDto requestDto) {
         return ApiResponse.success(HttpStatus.CREATED.value(),
                 "공연장이 생성되었습니다.",
-                hallService.createHall(requestDto));
+                hallService.createHall(roles, requestDto));
     }
 
     @Operation(summary = "Update Hall", description = "기존 공연장의 정보를 수정합니다.")
     @PutMapping("/{hallId}")
     public ResponseEntity<ApiResponse<CreateHallResponseDto>> updateHall(
+            @RequestHeader("X-User-Role") String roles,
             @PathVariable Long hallId,
             @Validated @RequestBody UpdateHallRequestDto requestDto){
         return ApiResponse.success(HttpStatus.OK.value(),
                 "공연장 정보가 수정되었습니다.",
-                hallService.updateHall(hallId, requestDto));
+                hallService.updateHall(roles, hallId, requestDto));
     }
 
     @Operation(summary = "Read Hall", description = "단건 공연장의 기본 정보를 조회합니다.")
@@ -63,10 +65,12 @@ public class HallController {
 
     @Operation(summary = "Delete Hall", description = "공연장 정보를 삭제합니다.")
     @DeleteMapping("/{hallId}")
-    public ResponseEntity<ApiResponse<Void>> deleteHall(@PathVariable Long hallId){
+    public ResponseEntity<ApiResponse<Void>> deleteHall(
+            @RequestHeader("X-User-Role") String roles,
+            @PathVariable Long hallId){
         return ApiResponse.success(HttpStatus.OK.value(),
                 "공연장을 삭제했습니다.",
-                hallService.deleteHall(hallId));
+                hallService.deleteHall(roles, hallId));
     }
 
 }

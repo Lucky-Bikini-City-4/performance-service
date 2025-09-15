@@ -24,20 +24,22 @@ public class CastController {
     @Operation(summary = "Create Cast", description = "새로운 출연진을 생성합니다.")
     @PostMapping
     public ResponseEntity<ApiResponse<CreateCastResponseDto>> createCast(
+            @RequestHeader("X-User-Role") String roles,
             @Validated @RequestBody CreateCastRequestDto requestDto) {
         return ApiResponse.success(HttpStatus.CREATED.value(),
                 "출연진이 생성되었습니다",
-                castService.createCast(requestDto));
+                castService.createCast(roles, requestDto));
     }
 
     @Operation(summary = "Update Cast", description = "기존 출연진의 정보를 수정합니다")
     @PatchMapping("/{castId}")
     public ResponseEntity<ApiResponse<CreateCastResponseDto>> updateCast(
+            @RequestHeader("X-User-Role") String roles,
             @PathVariable Long castId,
             @Validated @RequestBody CreateCastRequestDto requestDto){
         return ApiResponse.success(HttpStatus.OK.value(),
                 "출연진 정보가 수정되었습니다.",
-                castService.updateCast(castId, requestDto));
+                castService.updateCast(roles, castId, requestDto));
     }
 
     @Operation(summary = "Read Cast", description = "단건 출연진의 정보를 조회합니다.")
@@ -60,10 +62,12 @@ public class CastController {
 
     @Operation(summary = "Delete Cast", description = "출연진 정보를 삭제합니다.")
     @DeleteMapping("/{castId}")
-    public ResponseEntity<ApiResponse<Void>> deleteCast(@PathVariable Long castId){
+    public ResponseEntity<ApiResponse<Void>> deleteCast(
+            @RequestHeader("X-User-Role") String roles,
+            @PathVariable Long castId){
         return ApiResponse.success(HttpStatus.OK.value(),
                 "출연진을 삭제했습니다",
-                castService.deleteCast(castId));
+                castService.deleteCast(roles, castId));
     }
 
 }

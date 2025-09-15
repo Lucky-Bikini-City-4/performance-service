@@ -25,12 +25,13 @@ public class HallSectionController {
     @Operation(summary = "Update Hall Section", description = "공연장 구역 정보를 수정합니다.")
     @PutMapping("/{hallSectionId}")
     public ResponseEntity<ApiResponse<UpdateHallSectionResponseDto>> updateHallSection(
+            @RequestHeader("X-User-Role") String roles,
             @PathVariable Long hallId,
             @PathVariable Long hallSectionId,
             @Validated @RequestBody CreateHallSectionDto requestDto){
         return ApiResponse.success(HttpStatus.OK.value(),
                 "공연장 구역 정보가 수정되었습니다.",
-                hallSectionService.updateHallSection(hallId, hallSectionId, requestDto));
+                hallSectionService.updateHallSection(roles, hallId, hallSectionId, requestDto));
     }
 
     @Operation(summary = "Read Hall Section", description = "공연장의 단건 구역 정보를 조회합니다.")

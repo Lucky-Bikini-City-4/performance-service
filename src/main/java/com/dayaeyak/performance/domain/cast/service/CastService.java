@@ -11,6 +11,7 @@ import com.dayaeyak.performance.domain.cast.entity.Cast;
 import com.dayaeyak.performance.domain.cast.exception.CastErrorCode;
 import com.dayaeyak.performance.domain.cast.repository.CastRepository;
 import com.dayaeyak.performance.domain.performance.entity.Performance;
+import com.dayaeyak.performance.utils.RoleValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,7 +30,9 @@ public class CastService {
 
     /*출연진 생성*/
     @Transactional
-    public CreateCastResponseDto createCast(CreateCastRequestDto requestDto) {
+    public CreateCastResponseDto createCast(String roles, CreateCastRequestDto requestDto) {
+        RoleValidator.validateMaster(roles);
+
         // 출연진 이름 중복 검색
         if(castRepository.existsByCastNameAndDeletedAtIsNull(requestDto.castName())){
             throw new CustomException(CastErrorCode.CAST_NAME_DUPLICATED);
@@ -45,7 +48,9 @@ public class CastService {
 
     /*출연진 수정*/
     @Transactional
-    public CreateCastResponseDto updateCast(Long castId, CreateCastRequestDto requestDto) {
+    public CreateCastResponseDto updateCast(String roles, Long castId, CreateCastRequestDto requestDto) {
+        RoleValidator.validateMaster(roles);
+
         // 기존 출연진 조회
         Cast existingCast = castRepository.findByCastIdAndDeletedAtIsNull(castId)
                 .orElseThrow(() -> new CustomException(CastErrorCode.CAST_NOT_FOUND));
@@ -100,7 +105,9 @@ public class CastService {
 
     /* 출연진 삭제 */
     @Transactional
-    public Void deleteCast(Long castId) {
+    public Void deleteCast(String roles, Long castId) {
+        RoleValidator.validateMaster(roles);
+
         Cast cast = castRepository.findByCastIdAndDeletedAtIsNull(castId)
                 .orElseThrow(() -> new CustomException(CastErrorCode.CAST_NOT_FOUND));
 
