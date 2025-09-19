@@ -16,7 +16,6 @@ import com.dayaeyak.performance.domain.hall.exception.HallErrorCode;
 import com.dayaeyak.performance.domain.hall.repository.HallRepository;
 import com.dayaeyak.performance.domain.hall.repository.HallSectionRepository;
 import com.dayaeyak.performance.domain.performance.repository.PerformanceRepository;
-import com.dayaeyak.performance.utils.RoleValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,8 +37,7 @@ public class HallService {
 
     /* 공연장 생성 */
     @Transactional
-    public CreateHallResponseDto createHall(String roles, CreateHallRequestDto requestDto) {
-        RoleValidator.validateMaster(roles);
+    public CreateHallResponseDto createHall(CreateHallRequestDto requestDto) {
         // 공연장 이름 중복 검색
         if (hallRepository.existsByHallNameAndDeletedAtIsNull(requestDto.hallName())) {
             throw new CustomException(HallErrorCode.HALL_NAME_DUPLICATED);
@@ -64,8 +62,7 @@ public class HallService {
 
     /* 공연장 수정 */
     @Transactional
-    public CreateHallResponseDto updateHall(String roles, Long hallId, UpdateHallRequestDto requestDto) {
-        RoleValidator.validateMaster(roles);
+    public CreateHallResponseDto updateHall(Long hallId, UpdateHallRequestDto requestDto) {
         // 기존 공연장 조회
         Hall existingHall = hallRepository.findByHallIdAndDeletedAtIsNull(hallId)
                 .orElseThrow(() -> new CustomException(HallErrorCode.HALL_NOT_FOUND));
@@ -132,8 +129,7 @@ public class HallService {
 
     /* 공연장 삭제 */
     @Transactional
-    public Void deleteHall(String roles, Long hallId) {
-        RoleValidator.validateMaster(roles);
+    public Void deleteHall(Long hallId) {
 
         Hall hall = hallRepository.findByHallIdAndDeletedAtIsNull(hallId)
                 .orElseThrow(() -> new CustomException(HallErrorCode.HALL_NOT_FOUND));

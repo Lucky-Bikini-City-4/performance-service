@@ -1,5 +1,7 @@
 package com.dayaeyak.performance.domain.hall.controller;
 
+import com.dayaeyak.performance.annotation.Authorize;
+import com.dayaeyak.performance.common.enums.UserRole;
 import com.dayaeyak.performance.domain.hall.dto.request.CreateHallRequestDto;
 import com.dayaeyak.performance.domain.hall.dto.request.UpdateHallRequestDto;
 import com.dayaeyak.performance.domain.hall.dto.response.CreateHallResponseDto;
@@ -25,23 +27,23 @@ public class HallController {
 
     @Operation(summary = "Create Hall", description = "공연장, 구역 정보를 받아 새로운 공연장을 생성합니다.")
     @PostMapping
+    @Authorize(roles = { UserRole.MASTER })
     public ResponseEntity<ApiResponse<CreateHallResponseDto>> createHall(
-            @RequestHeader("X-User-Role") String roles,
             @Validated @RequestBody CreateHallRequestDto requestDto) {
         return ApiResponse.success(HttpStatus.CREATED.value(),
                 "공연장이 생성되었습니다.",
-                hallService.createHall(roles, requestDto));
+                hallService.createHall(requestDto));
     }
 
     @Operation(summary = "Update Hall", description = "기존 공연장의 정보를 수정합니다.")
     @PutMapping("/{hallId}")
+    @Authorize(roles = { UserRole.MASTER })
     public ResponseEntity<ApiResponse<CreateHallResponseDto>> updateHall(
-            @RequestHeader("X-User-Role") String roles,
             @PathVariable Long hallId,
             @Validated @RequestBody UpdateHallRequestDto requestDto){
         return ApiResponse.success(HttpStatus.OK.value(),
                 "공연장 정보가 수정되었습니다.",
-                hallService.updateHall(roles, hallId, requestDto));
+                hallService.updateHall(hallId, requestDto));
     }
 
     @Operation(summary = "Read Hall", description = "단건 공연장의 기본 정보를 조회합니다.")
@@ -65,12 +67,12 @@ public class HallController {
 
     @Operation(summary = "Delete Hall", description = "공연장 정보를 삭제합니다.")
     @DeleteMapping("/{hallId}")
+    @Authorize(roles = { UserRole.MASTER })
     public ResponseEntity<ApiResponse<Void>> deleteHall(
-            @RequestHeader("X-User-Role") String roles,
             @PathVariable Long hallId){
         return ApiResponse.success(HttpStatus.OK.value(),
                 "공연장을 삭제했습니다.",
-                hallService.deleteHall(roles, hallId));
+                hallService.deleteHall(hallId));
     }
 
 }

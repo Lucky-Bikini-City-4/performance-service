@@ -1,5 +1,7 @@
 package com.dayaeyak.performance.domain.performance.controller;
 
+import com.dayaeyak.performance.annotation.Authorize;
+import com.dayaeyak.performance.common.enums.UserRole;
 import com.dayaeyak.performance.domain.hall.enums.Region;
 import com.dayaeyak.performance.domain.performance.dto.request.ChangePerformanceRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.request.CreatePerformanceRequestDto;
@@ -27,34 +29,34 @@ public class PerformanceController {
 
     @Operation(summary = "Create Performance", description = "새로운 공연을 생성합니다.")
     @PostMapping
+    @Authorize(roles = { UserRole.MASTER })
     public ResponseEntity<ApiResponse<CreatePerformanceResponseDto>> createPerformance(
-            @RequestHeader("X-User-Role") String roles,
             @Validated @RequestBody CreatePerformanceRequestDto requestDto) {
         return ApiResponse.success(HttpStatus.CREATED.value(),
                 "공연이 생성되었습니다.",
-                performanceService.createPerformance(roles, requestDto));
+                performanceService.createPerformance(requestDto));
     }
 
     @Operation(summary = "Update Performance", description = "공연 정보를 수정합니다.")
     @PatchMapping("/{performanceId}")
+    @Authorize(roles = { UserRole.MASTER, UserRole.SELLER })
     public ResponseEntity<ApiResponse<CreatePerformanceResponseDto>> updatePerformance(
-            @RequestHeader("X-User-Role") String roles,
             @PathVariable Long performanceId,
             @RequestBody UpdatePerformanceRequestDto requestDto) {
         return ApiResponse.success(HttpStatus.OK.value(),
                 "공연을 수정했습니다.",
-                performanceService.updatePerformance(roles, performanceId, requestDto));
+                performanceService.updatePerformance(performanceId, requestDto));
     }
 
     @Operation(summary = "Change IsActivated", description = "공연의 활성화 상태를 변경합니다")
     @PatchMapping("/{performanceId}/activation")
+    @Authorize(roles = { UserRole.MASTER, UserRole.SELLER })
     public ResponseEntity<ApiResponse<Boolean>> changeIsActivated(
-            @RequestHeader("X-User-Role") String roles,
             @PathVariable Long performanceId,
             @Validated @RequestBody ChangePerformanceRequestDto requestDto) {
         return ApiResponse.success(HttpStatus.OK.value(),
                 "공연의 활성화 상태가 다음과 같이 변경되었습니다.",
-                performanceService.changeIsActivated(roles, performanceId, requestDto));
+                performanceService.changeIsActivated(performanceId, requestDto));
     }
 
     @Operation(summary = "Read Performance", description = "단건 공연을 조회합니다.")
@@ -79,11 +81,11 @@ public class PerformanceController {
 
     @Operation(summary = "Delete Performance", description = "공연을 삭제합니다.")
     @DeleteMapping("/{performanceId}")
+    @Authorize(roles = { UserRole.MASTER })
     public ResponseEntity<ApiResponse<Void>> deletePerformance(
-            @RequestHeader("X-User-Role") String roles,
             @PathVariable Long performanceId) {
         return ApiResponse.success(HttpStatus.OK.value(),
                 "공연을 삭제했습니다.",
-                performanceService.deletePerformance(roles, performanceId));
+                performanceService.deletePerformance(performanceId));
     }
 }
