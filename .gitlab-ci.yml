@@ -50,28 +50,24 @@ deploy:
     - aws-ubuntu-docker
   script:
     - echo "Starting deployment process..."
-    # 1. 도커 이미지 빌드
+    # 도커 이미지 빌드
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
 
-    # 2. GitLab 레지스트리 로그인
+    # GitLab 레지스트리 로그인
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
-    # 3. 도커 이미지 푸시
+    # 도커 이미지 푸시
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
 
-    # 4. SSH를 통해 EC2 인스턴스에 접속하여 배포 스크립트 실행
+    # SSH를 통해 EC2 인스턴스에 접속하여 배포 스크립트 실행
     - echo "Connecting to EC2 instance and deploying..."
     # SSH 접속 키 파일 권한 설정
     - chmod 600 $EC2_PRIVATE_KEY
     # SSH를 통해 원격 EC2 인스턴스에서 도커 로그인 및 배포 스크립트를 실행
     - ssh -i $EC2_PRIVATE_KEY $EC2_USER@$EC2_HOST "
-      # EC2 인스턴스에서 GitLab 레지스트리 로그인
       docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY &&
-      # 최신 도커 이미지 pull
       docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA &&
-      # 기존 컨테이너 종료
       docker-compose -f /home/$EC2_USER/docker-compose.yml down &&
-      # 새로운 컨테이너 실행
       docker-compose -f /home/$EC2_USER/docker-compose.yml up -d
       "
     - echo "Deployment successful."
