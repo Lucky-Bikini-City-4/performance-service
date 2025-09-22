@@ -1,0 +1,79 @@
+# 사용할 도커 이미지
+image: openjdk:17-jdk-slim
+
+# 파이프라인에 사용될 변수들
+variables:
+  BUILD_DIR: 'build/libs'               # 빌드된 JAR 파일이 저장될 경로
+  ARTIFACT_NAME: 'performance-service-build.jar'  # 빌드된 JAR 파일의 이름
+
+# 파이프라인 단계 정의
+stages:
+  - build
+  - test
+  - deploy
+
+# 빌드 (Build) 단계
+build:
+  stage: build
+  tags:
+    - aws-ubuntu-docker
+  script:
+    - echo "Building the project..."
+    - echo "$APPLICATION_YML" > src/main/resources/application.yml
+    - ./gradlew clean build -x test   # 테스트를 제외하고 빌드
+    - echo "Build complete."
+  artifacts:                          # 빌드된 결과물을 아티팩트로 저장
+    paths:
+      - $BUILD_DIR/$ARTIFACT_NAME
+    expire_in: 1 hour
+  only:
+    - main
+    - dev
+
+# 테스트 (Test) 단계
+test:
+  stage: test
+  tags:
+    - aws-ubuntu-docker
+  script:
+    - echo "Running tests..."
+    - ./gradlew test
+    - echo "All tests passed."
+  only:
+    - main
+    - dev
+
+# 배포 (Deploy) 단계
+deploy:
+  stage: deploy
+  tags:
+    - aws-ubuntu-docker
+  script:
+    - echo "Starting deployment process..."
+    # 1. 도커 이미지 빌드
+    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
+
+    # 2. GitLab 레지스트리 로그인
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+    # 3. 도커 이미지 푸시
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+
+    # 4. SSH를 통해 EC2 인스턴스에 접속하여 배포 스크립트 실행
+    - echo "Connecting to EC2 instance and deploying..."
+    # SSH 접속 키 파일 권한 설정
+    - chmod 600 $EC2_PRIVATE_KEY
+    # SSH를 통해 원격 EC2 인스턴스에서 도커 로그인 및 배포 스크립트를 실행
+    - ssh -i $EC2_PRIVATE_KEY $EC2_USER@$EC2_HOST "
+      # EC2 인스턴스에서 GitLab 레지스트리 로그인
+      docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY &&
+      # 최신 도커 이미지 pull
+      docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA &&
+      # 기존 컨테이너 종료
+      docker-compose -f /home/$EC2_USER/docker-compose.yml down &&
+      # 새로운 컨테이너 실행
+      docker-compose -f /home/$EC2_USER/docker-compose.yml up -d
+      "
+    - echo "Deployment successful."
+  only:
+    - main

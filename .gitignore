@@ -38,6 +38,8 @@ out/
 
 ### 환경 설정 ###
 *.yml
+!.gitlab-ci.yml
+!docker-compose.yml
 
 ### 로그 파일 ###
 *.log
