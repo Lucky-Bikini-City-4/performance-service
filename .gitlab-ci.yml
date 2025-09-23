@@ -41,7 +41,7 @@ test:
     - apt-get update -y
     - apt-get install curl -y
     - echo "Running tests..."
-    - curl ifconfig.me/ip
+    - curl -L ifconfig.me/ip
     - chmod +x gradlew
     - ./gradlew test
     - echo "All tests passed."
