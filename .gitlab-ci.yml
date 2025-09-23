@@ -26,7 +26,7 @@ build:
     - echo "Build complete."
   artifacts:
     paths:
-      - $BUILD_DIR/$ARTIFACT_NAME
+      - build/libs/performance-service-build.jar
       - application.yml
     expire_in: 1 hour
   only:
