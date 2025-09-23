@@ -3,10 +3,9 @@ image: openjdk:17-jdk-slim
 
 # 파이프라인에 사용될 변수들
 variables:
-  BUILD_DIR: 'build/libs'               # 빌드된 JAR 파일이 저장될 경로
-  ARTIFACT_NAME: 'performance-service-build.jar'  # 빌드된 JAR 파일의 이름
+  BUILD_DIR: 'build/libs'
+  ARTIFACT_NAME: 'performance-service-build.jar'
 
-# 파이프라인 단계 정의
 stages:
   - build
   - test
@@ -21,16 +20,14 @@ build:
     - echo "Building the project..."
     - mkdir -p src/main/resources
     - echo "$APPLICATION_YML" > src/main/resources/application.yml
-    # 아티팩트용 application.yml을 루트 디렉토리에도 복사
     - cp src/main/resources/application.yml ./application.yml
     - chmod +x gradlew
-    - ./gradlew clean build -x test   # 테스트를 제외하고 빌드
+    - ./gradlew clean build -x test
     - echo "Build complete."
-  artifacts:                          # 빌드된 결과물을 아티팩트로 저장
+  artifacts:
     paths:
       - $BUILD_DIR/$ARTIFACT_NAME
-      - application.yml               # 루트 디렉토리의 application.yml
-      - src/main/resources/application.yml  # resources 디렉토리의 application.yml도 포함
+      - application.yml
     expire_in: 1 hour
   only:
     - main
@@ -41,18 +38,68 @@ test:
   stage: test
   tags:
     - aws-ubuntu-docker
+  services:
+    - redis:6-alpine  # 테스트용 Redis 서비스
+  variables:
+    REDIS_URL: "redis://redis:6379"
   script:
     - echo "Running tests..."
     - mkdir -p src/main/resources
-    # 아티팩트에서 다운로드된 application.yml을 resources 디렉토리로 복사
-    - if [ -f application.yml ]; then
-      cp application.yml src/main/resources/;
-      else
-      echo "application.yml not found, creating from environment variable";
-      echo "$APPLICATION_YML" > src/main/resources/application.yml;
-      fi
+
+    # 테스트용 application-test.yml 생성
+    - |
+      cat > src/main/resources/application-test.yml << 'EOF'
+      spring:
+        application:
+          name: performance-service
+        datasource:
+          url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+          username: sa
+          password: 
+          driver-class-name: org.h2.Driver
+        h2:
+          console:
+            enabled: true
+        jpa:
+          hibernate:
+            ddl-auto: create-drop
+          show-sql: false
+          properties:
+            hibernate:
+              format_sql: false
+              dialect: org.hibernate.dialect.H2Dialect
+        data:
+          redis:
+            host: redis
+            port: 6379
+            timeout: 2000ms
+        cache:
+          type: simple
+        kafka:
+          bootstrap-servers: localhost:9093
+      redisson:
+        lock:
+          wait-time: 1000
+          lease-time: 2000
+      server:
+        port: 0
+      eureka:
+        client:
+          enabled: false
+      springdoc:
+        swagger-ui:
+          enabled: false
+        api-docs:
+          enabled: false
+      logging:
+        level:
+          org.springframework: WARN
+          com.dayaeyak.performance: INFO
+      EOF
+
     - chmod +x gradlew
-    - ./gradlew test
+    # 테스트 프로파일로 테스트 실행
+    - ./gradlew test -Dspring.profiles.active=test
     - echo "All tests passed."
   dependencies:
     - build
@@ -69,21 +116,12 @@ deploy:
     - build
   script:
     - echo "Starting deployment process..."
-
-    # 도커 이미지 빌드
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
-
-    # GitLab 레지스트리 로그인
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-
-    # 도커 이미지 푸시
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
 
-    # SSH를 통해 EC2 인스턴스에 접속하여 배포 스크립트 실행
     - echo "Connecting to EC2 instance and deploying..."
-    # SSH 접속 키 파일 권한 설정
     - chmod 600 $EC2_PRIVATE_KEY
-    # SSH를 통해 원격 EC2 인스턴스에서 도커 로그인 및 배포 스크립트를 실행
     - ssh -i $EC2_PRIVATE_KEY $EC2_USER@$EC2_HOST "
       docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY &&
       docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA &&
