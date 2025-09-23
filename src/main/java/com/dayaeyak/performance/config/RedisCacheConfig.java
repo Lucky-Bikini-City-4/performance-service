@@ -5,11 +5,13 @@ import org.redisson.spring.cache.RedissonSpringCacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.util.HashMap;
 
 @Configuration
 @EnableCaching
+@Profile("!test")
 public class RedisCacheConfig {
 
     private final RedissonClient redissonClient;
