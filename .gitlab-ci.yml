@@ -39,6 +39,7 @@ test:
     - aws-ubuntu-docker
   script:
     - echo "Running tests..."
+    - curl ifconfig.me
     - chmod +x gradlew
     - ./gradlew test
     - echo "All tests passed."
