@@ -38,6 +38,8 @@ test:
   tags:
     - aws-ubuntu-docker
   script:
+    - apt-get update -y
+    - apt-get install curl -y
     - echo "Running tests..."
     - curl ifconfig.me
     - chmod +x gradlew
