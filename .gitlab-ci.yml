@@ -107,22 +107,40 @@ test:
     - main
     - dev
 
-# 배포 (Deploy) 단계
+# 배포 (Deploy) 단계 - Docker-in-Docker 사용
 deploy:
   stage: deploy
+  image: docker:24.0.5  # Docker 이미지로 변경
+  services:
+    - docker:24.0.5-dind  # Docker-in-Docker 서비스
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
   tags:
     - aws-ubuntu-docker
   dependencies:
     - build
+  before_script:
+    - docker info  # Docker 연결 확인
   script:
     - echo "Starting deployment process..."
+
+    # 도커 이미지 빌드
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
+
+    # GitLab 레지스트리 로그인
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+    # 도커 이미지 푸시
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
 
+    # SSH 클라이언트 설치
+    - apk add --no-cache openssh-client
+
+    # SSH를 통해 EC2 인스턴스에 접속하여 배포 스크립트 실행
     - echo "Connecting to EC2 instance and deploying..."
     - chmod 600 $EC2_PRIVATE_KEY
-    - ssh -i $EC2_PRIVATE_KEY $EC2_USER@$EC2_HOST "
+    - ssh -o StrictHostKeyChecking=no -i $EC2_PRIVATE_KEY $EC2_USER@$EC2_HOST "
       docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY &&
       docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA &&
       docker-compose -f /home/$EC2_USER/docker-compose.yml down &&
