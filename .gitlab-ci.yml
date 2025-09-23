@@ -21,13 +21,16 @@ build:
     - echo "Building the project..."
     - mkdir -p src/main/resources
     - echo "$APPLICATION_YML" > src/main/resources/application.yml
+    # 아티팩트용 application.yml을 루트 디렉토리에도 복사
+    - cp src/main/resources/application.yml ./application.yml
     - chmod +x gradlew
     - ./gradlew clean build -x test   # 테스트를 제외하고 빌드
     - echo "Build complete."
   artifacts:                          # 빌드된 결과물을 아티팩트로 저장
     paths:
       - $BUILD_DIR/$ARTIFACT_NAME
-      - application.yml
+      - application.yml               # 루트 디렉토리의 application.yml
+      - src/main/resources/application.yml  # resources 디렉토리의 application.yml도 포함
     expire_in: 1 hour
   only:
     - main
@@ -41,7 +44,13 @@ test:
   script:
     - echo "Running tests..."
     - mkdir -p src/main/resources
-    - cp application.yml src/main/resources/
+    # 아티팩트에서 다운로드된 application.yml을 resources 디렉토리로 복사
+    - if [ -f application.yml ]; then
+      cp application.yml src/main/resources/;
+      else
+      echo "application.yml not found, creating from environment variable";
+      echo "$APPLICATION_YML" > src/main/resources/application.yml;
+      fi
     - chmod +x gradlew
     - ./gradlew test
     - echo "All tests passed."
