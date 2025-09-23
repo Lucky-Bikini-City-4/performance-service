@@ -27,7 +27,7 @@ build:
   artifacts:                          # 빌드된 결과물을 아티팩트로 저장
     paths:
       - $BUILD_DIR/$ARTIFACT_NAME
-      - src/main/resources/application.yml
+      - application.yml
     expire_in: 1 hour
   only:
     - main
@@ -41,10 +41,12 @@ test:
   script:
     - echo "Running tests..."
     - mkdir -p src/main/resources
-    - mv application.yml src/main/resources/
+    - cp application.yml src/main/resources/
     - chmod +x gradlew
     - ./gradlew test
     - echo "All tests passed."
+  dependencies:
+    - build
   only:
     - main
     - dev
@@ -54,6 +56,8 @@ deploy:
   stage: deploy
   tags:
     - aws-ubuntu-docker
+  dependencies:
+    - build
   script:
     - echo "Starting deployment process..."
 
