@@ -27,6 +27,7 @@ build:
   artifacts:                          # 빌드된 결과물을 아티팩트로 저장
     paths:
       - $BUILD_DIR/$ARTIFACT_NAME
+      - src/main/resources/application.yml
     expire_in: 1 hour
   only:
     - main
@@ -41,7 +42,7 @@ test:
     - apt-get update -y
     - apt-get install curl -y
     - echo "Running tests..."
-    - curl -L ifconfig.me/ip
+    - curl icanhazip.com
     - chmod +x gradlew
     - ./gradlew test
     - echo "All tests passed."
