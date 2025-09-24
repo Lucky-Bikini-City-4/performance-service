@@ -184,7 +184,6 @@ deploy:
     # EC2 키 파일 생성 (File 변수 그대로)
     - echo "=== Checking EC2 private key ==="
     - ls -l "$EC2_PRIVATE_KEY"
-    - file "$EC2_PRIVATE_KEY"
     - cat "$EC2_PRIVATE_KEY" | head -5
     - mv "$EC2_PRIVATE_KEY" deploy_key.pem
     - chmod 600 deploy_key.pem
