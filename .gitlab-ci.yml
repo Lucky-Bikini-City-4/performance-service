@@ -183,10 +183,8 @@ deploy:
     # 4) 최종 파일 확인
     - echo "=== Final files check ==="
     - ls -la performance-service-build.jar application.yml
-
-    # JAR 파일 내용 간단 확인 (MANIFEST.MF 존재 여부)
-    - unzip -l performance-service-build.jar | head -10
-
+    - echo "JAR file is ready for Docker build"
+    -
     # 5) 기존 Dockerfile로 Docker 이미지 빌드
     - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" .
 
