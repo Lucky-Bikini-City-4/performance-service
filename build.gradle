@@ -62,7 +62,7 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-tasks.named('jar') {
-	archiveBaseName.set('performance-service-build') // JAR 이름
-	archiveVersion.set('')                             // 버전 제거 (선택)
+jar {
+	archiveBaseName = 'performance-service-build'
+	archiveVersion = ''
 }
