@@ -136,28 +136,42 @@ deploy:
   script:
     - echo "Starting deployment process..."
 
-    # 1) JAR 파일 찾기 (개선된 로직)
+    # 1) JAR 파일 찾기 (fat JAR 우선 선택)
     - |
-      # 먼저 예상 위치에서 찾기
-      if [ -f "build/libs/performance-service-build.jar" ]; then
-        echo "Found JAR at expected location"
-        JAR_FILE="build/libs/performance-service-build.jar"
-      else
-        # build/libs/ 디렉토리에서 JAR 파일 찾기 (gradle-wrapper.jar 제외)
-        JAR_FILE=$(find build/libs/ -name "*.jar" -type f | grep -v gradle-wrapper | head -1)
-        if [ -n "$JAR_FILE" ] && [ -f "$JAR_FILE" ]; then
-          echo "Found JAR file: $JAR_FILE"
+      echo "=== Available JAR files ==="
+      find build/libs/ -name "*.jar" -type f -exec ls -lh {} \;
+      
+      # fat JAR 우선 선택 (크기가 큰 파일이 보통 fat JAR)
+      FAT_JAR=$(find build/libs/ -name "*.jar" -type f | grep -v "plain" | grep -v "gradle-wrapper" | head -1)
+      
+      if [ -n "$FAT_JAR" ] && [ -f "$FAT_JAR" ]; then
+        echo "Selected fat JAR: $FAT_JAR"
+        JAR_SIZE=$(stat -f%z "$FAT_JAR" 2>/dev/null || stat -c%s "$FAT_JAR")
+        echo "JAR file size: $JAR_SIZE bytes"
+      
+        # 파일 크기 체크 (1MB 이상이어야 fat JAR)
+        if [ "$JAR_SIZE" -gt 1048576 ]; then
+          echo "✓ Valid fat JAR selected"
+          JAR_FILE="$FAT_JAR"
         else
-          echo "ERROR: No JAR file found in build/libs/!" >&2
+          echo "ERROR: Selected JAR is too small (likely plain JAR)" >&2
           exit 1
         fi
+      else
+        echo "ERROR: No fat JAR file found!" >&2
+        echo "Available files in build/libs/:"
+        ls -la build/libs/
+        exit 1
       fi
 
     # 2) 기존 Dockerfile에 맞춰 JAR 파일명 변경
     - |
       # JAR 파일을 기존 Dockerfile이 기대하는 이름으로 복사
       cp "$JAR_FILE" performance-service-build.jar
-      echo "Copied JAR file to: performance-service-build.jar"
+      echo "Copied fat JAR to: performance-service-build.jar"
+      
+      # 최종 파일 크기 확인
+      ls -lh performance-service-build.jar
 
     # 3) application.yml 확인
     - |
@@ -169,6 +183,9 @@ deploy:
     # 4) 최종 파일 확인
     - echo "=== Final files check ==="
     - ls -la performance-service-build.jar application.yml
+
+    # JAR 파일 내용 간단 확인 (MANIFEST.MF 존재 여부)
+    - unzip -l performance-service-build.jar | head -10
 
     # 5) 기존 Dockerfile로 Docker 이미지 빌드
     - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" .
