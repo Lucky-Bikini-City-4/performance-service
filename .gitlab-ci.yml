@@ -182,7 +182,7 @@ deploy:
       fi
 
     # 7) EC2 키 파일 생성
-    - printf '%s\n' "$EC2_PRIVATE_KEY" | sed 's/\r$//' > deploy_key.pem
+    - echo "$EC2_PRIVATE_KEY" | tr -d '\r' > deploy_key.pem
     - chmod 600 deploy_key.pem
 
     # 8) 원격 배포 실행
