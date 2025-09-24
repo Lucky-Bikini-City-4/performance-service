@@ -190,21 +190,27 @@ deploy:
     - ls -l deploy_key.pem
 
 
-    # 8) 원격 배포 실행
+    # 8) 원격 배포 실행 - 직접 치환 방식 (더 간단함)
     - >
       ssh -o StrictHostKeyChecking=no -i deploy_key.pem "$EC2_USER@$EC2_HOST" "
-        echo '$CI_REGISTRY_PASSWORD' | docker login -u '$CI_REGISTRY_USER' --password-stdin $CI_REGISTRY &&
-        docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA &&
+        echo 'Logging into registry...' &&
+        echo '$CI_REGISTRY_PASSWORD' | docker login -u '$CI_REGISTRY_USER' --password-stdin '$CI_REGISTRY' &&
+        echo 'Pulling image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA' &&
+        docker pull '$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA' &&
+        echo 'Deploying with docker-compose...' &&
+        export CI_REGISTRY_IMAGE='$CI_REGISTRY_IMAGE' &&
+        export CI_COMMIT_SHORT_SHA='$CI_COMMIT_SHORT_SHA' &&
         if command -v docker-compose >/dev/null 2>&1; then
           docker-compose -f /home/$EC2_USER/docker-compose.yml down &&
-          docker-compose -f /home/$EC2_USER/docker-compose.yml up -d;
+          docker-compose -f /home/$EC2_USER/docker-compose.yml up -d
         elif docker compose version >/dev/null 2>&1; then
           docker compose -f /home/$EC2_USER/docker-compose.yml down &&
-          docker compose -f /home/$EC2_USER/docker-compose.yml up -d;
+          docker compose -f /home/$EC2_USER/docker-compose.yml up -d
         else
-          echo 'No docker-compose or docker compose on remote host' >&2
+          echo 'No docker-compose or docker compose found' >&2
           exit 1
-        fi
+        fi &&
+        echo 'Deployment completed successfully'
       "
 
     # 9) 정리
