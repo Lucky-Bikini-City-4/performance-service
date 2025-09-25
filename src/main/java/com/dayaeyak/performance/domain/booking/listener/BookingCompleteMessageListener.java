@@ -27,14 +27,14 @@ public class BookingCompleteMessageListener {
                                       Acknowledgment acknowledgment) {
 
         Integer partition = Integer.valueOf(partitionId);
-        log.info("예약 완료 메시지 수신 - topic: {}, partition: {}, offset: {}, message: {}",
+        log.info("예약 완료/취소 메시지 수신 - topic: {}, partition: {}, offset: {}, message: {}",
                 topic, partition, offset, message);
 
         try {
             // ServiceType이 PERFORMANCE인 경우만 처리
             if ("PERFORMANCE".equals(message.serviceType().name())) {
                 processPerformanceBooking(message);
-                log.info("공연 예약 처리 완료 - userId: {}, serviceId: {}",
+                log.info("공연 예약/취소 처리 완료 - userId: {}, serviceId: {}",
                         message.userId(), message.serviceId());
             } else {
                 log.info("공연 서비스가 아닌 메시지 스킬 - serviceType: {}", message.serviceType());
@@ -44,7 +44,7 @@ public class BookingCompleteMessageListener {
             acknowledgment.acknowledge();
 
         } catch (Exception e) {
-            log.error("예약 완료 메시지 처리 중 오류 발생", e);
+            log.error("예약 완료/취소 메시지 처리 중 오류 발생", e);
             // 에러가 발생한 경우 acknowledge 하지 않아 재처리됨
             throw e;
         }
@@ -62,9 +62,9 @@ public class BookingCompleteMessageListener {
         );
 
         // 좌석들을 품절 처리
-        performanceSeatService.bulkChangeToSoldOut(requestDto);
+        performanceSeatService.bulkChangeSeats(requestDto, bookingDetail.isSoldOut());
 
-        log.info("좌석 품절 처리 완료 - performanceId: {}, sessionId: {}, sectionId: {}, seatCount: {}",
+        log.info("좌석 품절 처리 변경 완료 - performanceId: {}, sessionId: {}, sectionId: {}, seatCount: {}",
                 bookingDetail.performanceId(),
                 bookingDetail.sessionId(),
                 bookingDetail.sectionId(),
