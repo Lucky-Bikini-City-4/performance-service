@@ -10,7 +10,6 @@ import com.dayaeyak.performance.domain.performance.repository.PerformanceSeatRep
 import com.dayaeyak.performance.domain.performance.repository.PerformanceSectionRepository;
 import com.dayaeyak.performance.domain.performance.repository.PerformanceSessionRepository;
 import com.dayaeyak.performance.utils.DistributedLock;
-import com.dayaeyak.performance.utils.RoleValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,9 +30,8 @@ public class SeatService {
     /* 공연 회차 구역 좌석 품절 여부 변경 (분산락 적용)*/
     @DistributedLock(key = "'seat:' + #seatId")
     @Transactional
-    public SeatResponseDto changeIsSoldOut(String roles, Long performanceId, Long sessionId,
+    public SeatResponseDto changeIsSoldOut(Long performanceId, Long sessionId,
             Long sectionId, Long seatId, UpdateSeatSoldOutRequestDto requestDto) {
-        RoleValidator.validateMaster(roles);
         log.info("좌석 품절 상태 변경 시작 - seatId: {}, soldOut: {}", seatId, requestDto.isSoldOut());
 
         // 좌석 조회

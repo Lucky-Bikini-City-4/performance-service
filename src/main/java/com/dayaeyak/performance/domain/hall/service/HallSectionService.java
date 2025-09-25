@@ -9,7 +9,6 @@ import com.dayaeyak.performance.domain.hall.entity.HallSection;
 import com.dayaeyak.performance.domain.hall.exception.HallErrorCode;
 import com.dayaeyak.performance.domain.hall.repository.HallRepository;
 import com.dayaeyak.performance.domain.hall.repository.HallSectionRepository;
-import com.dayaeyak.performance.utils.RoleValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +24,7 @@ public class HallSectionService {
 
     /* 공연장 구역 수정 */
     @Transactional
-    public UpdateHallSectionResponseDto updateHallSection(String roles, Long hallId, Long hallSectionId, CreateHallSectionDto requestDto) {
-        RoleValidator.validateMaster(roles);
+    public UpdateHallSectionResponseDto updateHallSection(Long hallId, Long hallSectionId, CreateHallSectionDto requestDto) {
 
         // 구역 ID로 조회
         HallSection hallSection = hallSectionRepository.findByHallSectionIdAndDeletedAtIsNull(hallSectionId)

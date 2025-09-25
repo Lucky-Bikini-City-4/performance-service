@@ -1,6 +1,8 @@
 
 package com.dayaeyak.performance.domain.performance.controller;
 
+import com.dayaeyak.performance.annotation.Authorize;
+import com.dayaeyak.performance.common.enums.UserRole;
 import com.dayaeyak.performance.domain.performance.dto.request.UpdateSeatSoldOutRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.response.SeatResponseDto;
 import com.dayaeyak.performance.domain.performance.service.SeatService;
@@ -23,8 +25,8 @@ public class SeatController {
 
     @Operation(summary = "Change IsSoldOut", description = "좌석의 품절 여부를 변경합니다.")
     @PostMapping("/{seatId}")
+    @Authorize(roles = { UserRole.MASTER })
     public ResponseEntity<ApiResponse<SeatResponseDto>> changeIsSoldOut(
-            @RequestHeader("X-User-Role") String roles,
             @PathVariable Long performanceId,
             @PathVariable Long sessionId,
             @PathVariable Long sectionId,
@@ -32,7 +34,7 @@ public class SeatController {
             @RequestBody UpdateSeatSoldOutRequestDto requestDto) {
         return ApiResponse.success(HttpStatus.OK.value(),
                 "해당 좌석의 품절 여부를 변경했습니다.",
-                seatService.changeIsSoldOut(roles, performanceId, sessionId, sectionId, seatId, requestDto));
+                seatService.changeIsSoldOut(performanceId, sessionId, sectionId, seatId, requestDto));
     }
 
     @Operation(summary = "Read Performance Seat", description = "해당 좌석의 상세 정보를 조회합니다.")

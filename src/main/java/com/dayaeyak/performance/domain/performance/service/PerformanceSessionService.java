@@ -16,7 +16,6 @@ import com.dayaeyak.performance.domain.performance.repository.PerformanceReposit
 import com.dayaeyak.performance.domain.performance.repository.PerformanceSeatRepository;
 import com.dayaeyak.performance.domain.performance.repository.PerformanceSectionRepository;
 import com.dayaeyak.performance.domain.performance.repository.PerformanceSessionRepository;
-import com.dayaeyak.performance.utils.RoleValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,8 +38,7 @@ public class PerformanceSessionService {
 
     /* 공연 회차 생성 */
     @Transactional
-    public CreateSessionResponseDto createSession(String roles, Long performanceId, CreateSessionRequestDto requestDto){
-        RoleValidator.validateMasterOrSeller(roles);
+    public CreateSessionResponseDto createSession(Long performanceId, CreateSessionRequestDto requestDto){
 
         // 경로 변수의 공연 ID와 요청 DTO의 공연 ID가 일치하지 않을 시 예외
         if(!Objects.equals(performanceId, requestDto.performanceId())){
@@ -119,9 +117,7 @@ public class PerformanceSessionService {
 
     /* 공연 회차 수정 */
     @Transactional
-    public CreateSessionResponseDto updateSession(String roles, Long performanceId, Long sessionId, UpdateSessionRequestDto requestDto){
-        RoleValidator.validateMasterOrSeller(roles);
-
+    public CreateSessionResponseDto updateSession(Long performanceId, Long sessionId, UpdateSessionRequestDto requestDto){
         // 공연 회차 조회
         PerformanceSession session = findSessionById(sessionId);
 
@@ -180,9 +176,7 @@ public class PerformanceSessionService {
 
     /* 공연 회차 삭제 */
     @Transactional
-    public Void deleteSession(String roles, Long performanceId, Long sessionId){
-        RoleValidator.validateMasterOrSeller(roles);
-
+    public Void deleteSession(Long performanceId, Long sessionId){
         // 공연 회차 조회
         PerformanceSession session = findSessionById(sessionId);
 
