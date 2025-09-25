@@ -1,6 +1,7 @@
 package com.dayaeyak.performance.domain.performance.service;
 
 import com.dayaeyak.performance.common.exception.CustomException;
+import com.dayaeyak.performance.domain.booking.dto.BulkSeatSoldOutRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.request.UpdateSeatSoldOutRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.response.SeatResponseDto;
 import com.dayaeyak.performance.domain.performance.entity.PerformanceSeat;
@@ -119,5 +120,64 @@ public class SeatService {
         // 해당 구역 전체 좌석의 품절여부만 조회
         return performanceSeatRepository.findIsSoldOutBySectionIdNative(sectionId);
     }
+
+    /**
+     * 여러 좌석을 한 번에 품절 처리 (분산락 적용)
+     */
+    @DistributedLock(key = "'section:' + #requestDto.sectionId()")
+    @Transactional
+    public void bulkChangeToSoldOut(BulkSeatSoldOutRequestDto requestDto) {
+        log.info("벌크 좌석 품절 처리 시작 - sectionId: {}, seatIds: {}",
+                requestDto.sectionId(), requestDto.seatIds());
+
+        // 구역 조회
+        PerformanceSection section = performanceSectionRepository.findByPerformanceSectionIdAndDeletedAtIsNull(requestDto.sectionId())
+                .orElseThrow(() -> new CustomException(PerformanceErrorCode.SECTION_NOT_FOUND));
+
+        // 구역이 요청한 회차에 속하는지 검증
+        if (!Objects.equals(section.getPerformanceSession().getPerformanceSessionId(), requestDto.sessionId())) {
+            throw new CustomException(PerformanceErrorCode.MISMATCHED_SESSION_AND_SECTION);
+        }
+
+        // 회차가 요청한 공연에 속하는지 검증
+        if (!Objects.equals(section.getPerformanceSession().getPerformance().getPerformanceId(), requestDto.performanceId())) {
+            throw new CustomException(PerformanceErrorCode.MISMATCHED_PERFORMANCE_AND_SESSION);
+        }
+
+        // 좌석들 조회 및 검증
+        List<PerformanceSeat> seats = performanceSeatRepository.findAllByPerformanceSeatIdInAndDeletedAtIsNull(requestDto.seatIds());
+
+        if (seats.size() != requestDto.seatIds().size()) {
+            throw new CustomException(PerformanceErrorCode.SEAT_NOT_FOUND);
+        }
+
+        int soldOutCount = 0;
+
+        for (PerformanceSeat seat : seats) {
+            // 좌석이 요청한 구역에 속하는지 검증
+            if (!Objects.equals(seat.getPerformanceSection().getPerformanceSectionId(), requestDto.sectionId())) {
+                throw new CustomException(PerformanceErrorCode.MISMATCHED_SECTION_AND_SEAT);
+            }
+
+            // 이미 품절된 좌석이 아닌 경우만 품절 처리
+            if (!seat.getIsSoldOut()) {
+                seat.sellOut();
+                soldOutCount++;
+                log.info("좌석 품절 처리 - seatId: {}", seat.getPerformanceSeatId());
+            } else {
+                log.warn("이미 품절된 좌석 스킵 - seatId: {}", seat.getPerformanceSeatId());
+            }
+        }
+
+        // 실제로 품절 처리된 좌석 수만큼 구역의 잔여좌석수 감소
+        if (soldOutCount > 0) {
+            section.decreaseRemainingSeats(soldOutCount);
+            log.info("구역 잔여좌석수 감소 - sectionId: {}, 감소된 좌석수: {}", requestDto.sectionId(), soldOutCount);
+        }
+
+        log.info("벌크 좌석 품절 처리 완료 - sectionId: {}, 처리된 좌석수: {}/{}",
+                requestDto.sectionId(), soldOutCount, requestDto.seatIds().size());
+    }
+
 
 }

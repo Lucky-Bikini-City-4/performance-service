@@ -53,4 +53,21 @@ public class PerformanceSection extends BaseEntity {
     public void increaseRemainingSeats() {
         this.remainingSeats++;
     }
+
+    /**
+     * 잔여좌석수를 지정된 개수만큼 감소
+     */
+    public void decreaseRemainingSeats(int count) {
+        if (this.remainingSeats < count) {
+            throw new IllegalStateException("남은 좌석 수는 0보다 작을 수 없습니다.");
+        }
+        this.remainingSeats -= count;
+    }
+
+    /**
+     * 잔여좌석수를 지정된 개수만큼 증가
+     */
+    public void increaseRemainingSeats(int count) {
+        this.remainingSeats += count;
+    }
 }

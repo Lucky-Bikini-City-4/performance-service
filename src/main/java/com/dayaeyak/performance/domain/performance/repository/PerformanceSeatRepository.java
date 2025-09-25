@@ -17,5 +17,5 @@ public interface PerformanceSeatRepository extends JpaRepository<PerformanceSeat
             "WHERE performance_section_id = :sectionId " +
             "ORDER BY seat_number ASC", nativeQuery = true)
     List<Boolean> findIsSoldOutBySectionIdNative(@Param("sectionId") Long sectionId);
-
+    List<PerformanceSeat> findAllByPerformanceSeatIdInAndDeletedAtIsNull(List<Long> seatIds);
 }
