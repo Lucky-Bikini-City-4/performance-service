@@ -4,6 +4,7 @@ import com.dayaeyak.performance.common.exception.CustomException;
 import com.dayaeyak.performance.domain.booking.dto.BulkSeatSoldOutRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.request.UpdateSeatSoldOutRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.response.SeatResponseDto;
+import com.dayaeyak.performance.domain.performance.dto.response.SeatStatusDto;
 import com.dayaeyak.performance.domain.performance.entity.PerformanceSeat;
 import com.dayaeyak.performance.domain.performance.entity.PerformanceSection;
 import com.dayaeyak.performance.domain.performance.exception.PerformanceErrorCode;
@@ -100,7 +101,7 @@ public class SeatService {
     }
 
     /* 한 구역의 좌석 전체 조회 (순서대로 좌석의 품절 여부만 응답) */
-    public List<Boolean> readPerformanceSeats(Long performanceId, Long sessionId, Long sectionId){
+    public List<SeatStatusDto> readPerformanceSeats(Long performanceId, Long sessionId, Long sectionId){
         // 요청 구역 조회
         PerformanceSection section = performanceSectionRepository.findByPerformanceSectionIdAndDeletedAtIsNull(sectionId)
                 .orElseThrow(() -> new CustomException(PerformanceErrorCode.SECTION_NOT_FOUND));
@@ -115,8 +116,12 @@ public class SeatService {
             throw new CustomException(PerformanceErrorCode.MISMATCHED_PERFORMANCE_AND_SESSION);
         }
 
-        // 해당 구역 전체 좌석의 품절여부만 조회
-        return performanceSeatRepository.findIsSoldOutBySectionIdNative(sectionId);
+        // Repository의 새로운 메서드를 호출하여 seatId와 isSoldOut을 함께 조회
+        List<Object[]> results = performanceSeatRepository.findSeatIdAndIsSoldOutBySectionIdNative(sectionId);
+
+        return results.stream()
+                .map(row -> new SeatStatusDto(((Number) row[0]).longValue(), (boolean) row[1]))
+                .toList();
     }
 
     /**

@@ -5,6 +5,7 @@ import com.dayaeyak.performance.annotation.Authorize;
 import com.dayaeyak.performance.common.enums.UserRole;
 import com.dayaeyak.performance.domain.performance.dto.request.UpdateSeatSoldOutRequestDto;
 import com.dayaeyak.performance.domain.performance.dto.response.SeatResponseDto;
+import com.dayaeyak.performance.domain.performance.dto.response.SeatStatusDto;
 import com.dayaeyak.performance.domain.performance.service.SeatService;
 import com.dayaeyak.performance.utils.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,7 +52,7 @@ public class SeatController {
 
     @Operation(summary = "Get IsSoldOut of all Seats", description = "전체 좌석의 품절 여부를 조회합니다.")
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Boolean>>> readPerformanceSeats(
+    public ResponseEntity<ApiResponse<List<SeatStatusDto>>> readPerformanceSeats(
             @PathVariable Long performanceId,
             @PathVariable Long sessionId,
             @PathVariable Long sectionId) {

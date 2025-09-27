@@ -12,10 +12,13 @@ import java.util.Optional;
 public interface PerformanceSeatRepository extends JpaRepository<PerformanceSeat, Long> {
     List<PerformanceSeat> findByPerformanceSectionAndDeletedAtIsNull(PerformanceSection performanceSection);
     Optional<PerformanceSeat> findByPerformanceSeatIdAndDeletedAtIsNull(Long performanceSeatId);
-
-    @Query(value = "SELECT is_sold_out FROM performance_seats " +
-            "WHERE performance_section_id = :sectionId " +
-            "ORDER BY seat_number ASC", nativeQuery = true)
-    List<Boolean> findIsSoldOutBySectionIdNative(@Param("sectionId") Long sectionId);
     List<PerformanceSeat> findAllByPerformanceSeatIdInAndDeletedAtIsNull(List<Long> seatIds);
+
+    @Query(value = "SELECT ps.performance_seat_id, ps.is_sold_out " +
+            "FROM performance_seats ps " +
+            "WHERE ps.performance_section_id = :sectionId " +
+            "ORDER BY ps.performance_seat_id ASC", nativeQuery = true)
+    List<Object[]> findSeatIdAndIsSoldOutBySectionIdNative(
+            @Param("sectionId") Long sectionId
+    );
 }
