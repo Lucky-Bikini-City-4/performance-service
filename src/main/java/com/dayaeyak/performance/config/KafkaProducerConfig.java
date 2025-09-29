@@ -3,6 +3,7 @@ package com.dayaeyak.performance.config;
 import com.dayaeyak.performance.domain.alarm.dto.ServiceRegisterRequestDto;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -16,7 +17,8 @@ import java.util.Map;
 @Configuration
 public class KafkaProducerConfig {
 
-    private final String SERVER = "localhost:9092";
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String SERVER;
 
     @Bean
     public Map<String, Object> getStringObjectMap() {
